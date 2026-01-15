@@ -20,7 +20,7 @@ namespace servercore
     public:
         bool    Connect(NetworkAddress& targetNetworkAddress);
         void    Disconnect();
-        bool    Send(std::shared_ptr<SendContext> sendContext);
+        bool    TryFlushSend(std::shared_ptr<SendContext> sendContext);
 
     public:
         virtual void OnConnected() {};

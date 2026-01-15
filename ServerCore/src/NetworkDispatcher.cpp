@@ -199,17 +199,33 @@ namespace servercore
         ::write(_exitSignalEventPipe[1], buffer, sizeof(buffer));
     }
 
-    bool EpollDispatcher::RegisterSend(std::shared_ptr<INetworkObject> networkObject)
+    // 지금은 더 못 보냄 → 나중에 "쓸 수 있게 되면" 알려달라
+    bool EpollDispatcher::EnableSendEvent(std::shared_ptr<INetworkObject> networkObject)
     {
         if(networkObject == nullptr)
             return false;
 
-        //  networkobject ( Session , Acceptor ) Event 등록
         struct epoll_event epollEv;
-        epollEv.events = EPOLLIN | EPOLLOUT | EPOLLET;
+        epollEv.events |= EPOLLOUT;
         epollEv.data.ptr = networkObject.get();
 
-        if(::epoll_ctl(_epollFd, EPOLL_CTL_ADD, networkObject->GetSocketFd(), &epollEv) == RESULT_ERROR)
+        if(::epoll_ctl(_epollFd, EPOLL_CTL_MOD, networkObject->GetSocketFd(), &epollEv) == RESULT_ERROR)
+            return false;
+
+        return true;
+    }
+
+    // sendQueue가 비었다 = 더 보낼 게 없다
+    bool EpollDispatcher::DisableSendEvent(std::shared_ptr<INetworkObject> networkObject)
+    {
+        if(networkObject == nullptr)
+            return false;
+
+        struct epoll_event epollEv;
+        epollEv.events  &= ~EPOLLOUT;
+        epollEv.data.ptr = networkObject.get();
+
+        if(::epoll_ctl(_epollFd, EPOLL_CTL_MOD, networkObject->GetSocketFd(), &epollEv) == RESULT_ERROR)
             return false;
 
         return true;

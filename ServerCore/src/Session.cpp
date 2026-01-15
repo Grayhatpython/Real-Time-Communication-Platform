@@ -2,6 +2,7 @@
 #include "Session.hpp"
 #include "NetworkDispatcher.hpp"
 #include "NetworkUtils.hpp"
+#include "SessionManager.hpp"
 
 namespace servercore
 {
@@ -83,9 +84,24 @@ namespace servercore
 		ProcessDisconnect(disconnectEvent);
 	}
 
-	bool Session::Send(std::shared_ptr<SendContext> sendContext)
+	bool Session::TryFlushSend(std::shared_ptr<SendContext> sendContext)
 	{
-	
+		if(_isConnected.load() == false)
+			return false;
+
+		/* 
+		[게임 로직이 보내야 할 데이터 발생]
+		TryFlushSend() 호출
+		send()로 가능한 만큼 보냄
+		EAGAIN(버퍼 꽉참) -> EPOLLOUT 감시 켬(여유 생기면 알려달라고)		
+		(시간 지나 송신버퍼에 여유 생김)
+		epoll_wait에서 EPOLLOUT 이벤트 도착
+		다시 TryFlushSend() 호출
+		다 보낼 때까지 반복, 끝나면 EPOLLOUT 끔 
+
+		전담 send 스레드 활용할 생각
+		*/
+
 	}
 
 	void Session::ProcessConnect()
@@ -108,8 +124,7 @@ namespace servercore
 			disconnectEvent = nullptr;
 		}
 
-		//	TODO
-	 	// _serverCore->RemoveSession(session);
+		GSessionManager->RemoveSession()
 	}
 
 	void Session::ProcessRecv(RecvEvent* recvEvent)
@@ -211,8 +226,22 @@ namespace servercore
 			case NetworkEventType::Connect:
 				break;
 			case NetworkEventType::Recv:
+				RecvEvent* recvEvent = static_cast<RecvEvent*>(networkEvent);
+				if(recvEvent)
+				{
+					auto networkObject = shared_from_this();
+					recvEvent->SetOwner(networkObject);
+					ProcessRecv(recvEvent);
+				}
 				break;
 			case NetworkEventType::Send:
+				SendEvent* sendEvent = static_cast<SendEvent*>(networkEvent);
+				if(sendEvent)
+				{
+					auto networkObject = shared_from_this();
+					sendEvent->SetOwner(networkObject);
+					ProcessSend(sendEvent);
+				}
 				break;
 			case NetworkEventType::Error:
 			default:
