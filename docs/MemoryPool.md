@@ -7,7 +7,7 @@
 
 ---
 
-### 핵심 아이디어
+### ✅ 핵심 아이디어
 
 - 각 스레드는 `thread_local` 영역에 **전용 메모리 버킷(= size class 별 캐시)** 을 보유한다.
 - 자주 발생하는 작은 할당은 **TLS 캐시에서 락 없이 처리**한다.
@@ -16,7 +16,7 @@
 
 ---
 
-### Size Class / Bucket 구성
+### ✅ Size Class / Bucket 구성
 
 - `S_CACHE_BUCKET_SIZE = 32` : size class(버킷) 개수
 - `S_MIN_BLOCK_SIZE = 32`, `S_MAX_BLOCK_SIZE = 4096` 범위의 고정 크기 블록을 캐싱
@@ -34,7 +34,7 @@
 
 ---
 
-### Thread-Local Cache (TLS) 구조
+### ✅ Thread-Local Cache (TLS) 구조
 
 각 스레드는 size class 별로 `Bucket`을 가진다.
 
@@ -45,7 +45,7 @@ TLS 경로는 기본적으로 **락이 없다**(스레드 전용이므로).
 
 ---
 
-### Global Pool 구조
+### ✅ Global Pool 구조
 
 Global Pool 역시 동일한 size class(버킷) 개념으로 **FreeList(중앙 캐시)** 를 유지한다.
 
@@ -55,7 +55,7 @@ Global Pool 역시 동일한 size class(버킷) 개념으로 **FreeList(중앙 �
 
 ---
 
-## 할당(Allocate) 흐름
+## ✅ 할당(Allocate) 흐름
 
 1) 사용자가 특정 크기의 메모리를 요청한다.  
 2) 요청 크기를 size class로 매핑한다(라운딩/버킷 인덱스 계산).  
@@ -67,7 +67,7 @@ Global Pool 역시 동일한 size class(버킷) 개념으로 **FreeList(중앙 �
 
 ---
 
-## 해제(Free) 흐름
+## ✅ 해제(Free) 흐름
 
 1) 해제 요청된 블록의 크기(size class)를 판별한다.  
 2) **TLS 버킷에 여유가 있으면**(예: 현재 캐시 개수 < 500) → TLS에 push하여 보관한다(락 없음).  
@@ -78,7 +78,7 @@ Global Pool 역시 동일한 size class(버킷) 개념으로 **FreeList(중앙 �
 
 ---
 
-## 동시성(Concurrency) 관점 정리
+## ✅ 동시성(Concurrency) 관점 정리
 
 - **fast path(대부분의 할당/해제)**: TLS에서 처리 → 락 없음
 - **slow path(리필/오버플로 반환)**: Global Pool 접근 → size class별 락
@@ -88,7 +88,7 @@ Global Pool 역시 동일한 size class(버킷) 개념으로 **FreeList(중앙 �
 
 ---
 
-## 개선/보완 아이디어 (TODO)
+## ✅ 개선/보완 아이디어 (TODO)
 
 ### 1) TLS 캐시 “과잉 보유” 메모리 회수 정책
 현재 구조에서는 특정 스레드가 한 번 큰 트래픽을 겪고 나면,
@@ -107,3 +107,33 @@ TLS 버킷에 블록이 많이 남아 **장시간 사용되지 않는 메모리*
 - Refill/Return 배치 크기(현재는 100개로 고정)를 워크로드에 따라 동적으로 조정해, 핫 사이즈에서는 락 횟수를 줄이고 메모리 사용량을 안정화
 
 ---
+
+## ✅ 사용 예시
+
+```cpp
+class Knight
+{
+public:
+    Knight() = default;
+    ~Knight() = default;
+
+public:
+    int hp = 3;
+    int mp = 0;
+};
+
+
+for (int i = 0; i < 5; i++)
+{
+    serverCore::GThreadManager->Launch([]() {
+        for (int i = 0; i < 100; i++)
+        {
+           auto k1 = serverCore::cnew<Knight>();
+           serverCore::cdelete(k1);
+
+           auto k2 = MakeShared<Knight>();
+        }
+        },"TestThread", false);
+}
+
+serverCore::GThreadManager->Join();
