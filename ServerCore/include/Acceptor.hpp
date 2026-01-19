@@ -16,7 +16,7 @@ namespace servercore
 
 	public:
 		virtual NetworkObjectType   GetNetworkObjectType() override { return NetworkObjectType::Acceptor; }
-		virtual SocketFd            GetSocketFd() override { return _listenSocketFd; } 
+		virtual SocketFd            GetSocketFd() const override { return _listenSocketFd; } 
 		virtual void                Dispatch(INetworkEvent* networkEvent) override;
 
 	private:

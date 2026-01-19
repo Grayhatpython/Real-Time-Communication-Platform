@@ -31,7 +31,7 @@ namespace servercore
 
     public:
         virtual NetworkObjectType   GetNetworkObjectType() = 0;
-        virtual SocketFd            GetSocketFd() = 0;
+        virtual SocketFd            GetSocketFd() const = 0;
         virtual void                Dispatch(INetworkEvent* networkEvent) = 0;  
     };
 
@@ -42,7 +42,7 @@ namespace servercore
 
     public:
         virtual NetworkObjectType   GetNetworkObjectType() = 0;
-        virtual SocketFd            GetSocketFd() = 0;
+        virtual SocketFd            GetSocketFd() const = 0;
         virtual void                Dispatch(INetworkEvent* networkEvent) = 0;
     };
 

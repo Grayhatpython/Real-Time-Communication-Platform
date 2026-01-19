@@ -19,10 +19,16 @@ namespace servercore
         virtual DispatchResult  Dispatch(uint32 timeoutMs = TIMEOUT_INFINITE) override;
         virtual void            PostExitSignal() override;
 
+        bool                    EnableConnectEvent(std::shared_ptr<INetworkObject> networkObject);
+        bool                    DisableConnectEvent(std::shared_ptr<INetworkObject> networkObject);
         bool                    EnableSendEvent(std::shared_ptr<INetworkObject> networkObject);
         bool                    DisableSendEvent(std::shared_ptr<INetworkObject> networkObject);
         bool                    UnRegister(std::shared_ptr<INetworkObject> networkObject);
 
+    private:
+        bool                    EnableEvent(const std::shared_ptr<INetworkObject>& networkObject);
+        bool                    DisableEvent(const std::shared_ptr<INetworkObject>& networkObject);
+        
     public:
         EpollFd                 GetEpollFd() { return _epollFd; }
 

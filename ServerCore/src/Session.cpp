@@ -37,37 +37,66 @@ namespace servercore
 
 		if (NetworkUtils::Bind(_socketFd, static_cast<uint16>(0)) == false)
 		{
-			NetworkUtils::CreateSocketFd(_socketFd);
+			NetworkUtils::CloseSocketFd(_socketFd);
 			return false;
 		}
 
 		if (_networkDispatcher->Register(shared_from_this()) == false)
 		{
-			NetworkUtils::CreateSocketFd(_socketFd);
+			NetworkUtils::CloseSocketFd(_socketFd);
 			return false;
 		}
 
 		struct sockaddr_in serverAddress = targetAddress.GetSocketAddress();
-		_isConnectPending.store(true);
+		_isConnectPending.store(true, std::memory_order_release);
 
-		int32 error = ::connect(_socketFd, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
-		if(error == RESULT_ERROR)
+		int32 ret = ::connect(_socketFd, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
+		
+		if(ret == RESULT_OK)
+		{
+			if(_networkDispatcher->Register(shared_from_this()) == false)
+			{
+				NetworkUtils::CloseSocketFd(_socketFd);
+				_isConnectPending.store(false, std::memory_order_release);
+				return false;
+			}
+
+			ProcessConnect();
+		}
+
+		if(ret < 0)
 		{
 			//	EINPROGRESS 경우 연결이 즉시 완료되지 않았지만, 백그라운드에서 진행 중
 			// 	이 경우 이후 epoll 등으로 EPOLLOUT 이벤트를 기다려 연결 완료를 감지
 			//	그 외 음수 값 (다른 errno): 연결 시도가 명백한 오류로 실패
 			if(errno != EINPROGRESS)
 			{
-				NetworkUtils::CreateSocketFd(_socketFd);
-				_isConnectPending.store(false);
+				NetworkUtils::CloseSocketFd(_socketFd);
+				_isConnectPending.store(false, std::memory_order_release);
 				return false;
 			}
-		}
-		else
-		{
-			ConnectEvent* connectEvent = cnew<ConnectEvent>();
-			//	바로 Connect
-			// ProcessConnect(connectEvent);
+
+			if(_networkDispatcher->Register(shared_from_this()) == false)
+			{
+				NetworkUtils::CloseSocketFd(_socketFd);
+				_isConnectPending.store(false, std::memory_order_release);
+				return false;
+			}
+
+			auto epollDispatcher = std::static_pointer_cast<EpollDispatcher>(_networkDispatcher);
+			if(epollDispatcher == nullptr)
+			{
+				NetworkUtils::CloseSocketFd(_socketFd);
+				_isConnectPending.store(false, std::memory_order_release);
+				return false;
+			}
+
+			if(epollDispatcher->EnableConnectEvent(shared_from_this()) == false)
+			{
+				NetworkUtils::CloseSocketFd(_socketFd);
+				_isConnectPending.store(false, std::memory_order_release);
+				return false;
+			}
 		}
 
 		return true;
@@ -119,8 +148,58 @@ namespace servercore
 
 	void Session::ProcessConnect()
 	{
-		//	accept -> 
+		if(QueryConnectError() == false)
+		{
+			
+		}
+
+		_isConnectPending.store(false, std::memory_order_release);
+
+		//	Server Client Contents 
 		OnConnected();
+	}
+
+	void Session::ProcessConnect(ConnectEvent* connectEvent)
+	{
+		//	그만
+		if(QueryConnectError() == false)
+		{
+
+		}
+
+		_isConnectPending.store(false, std::memory_order_release);
+
+		auto epollDispatcher = std::static_pointer_cast<EpollDispatcher>(_networkDispatcher);
+		if(epollDispatcher)
+		{
+			if(epollDispatcher->DisableConnectEvent(shared_from_this()) == false)
+			{
+				;
+			}
+		}
+
+		OnConnected();
+		
+		if(connectEvent)
+		{
+			cdelete(connectEvent);
+			connectEvent = nullptr;
+		}
+	}
+
+	bool Session::QueryConnectError()
+	{
+		int32 err = 0;
+		socklen_t len = sizeof(err);
+		if (::getsockopt(_socketFd, SOL_SOCKET, SO_ERROR, &err, &len) < 0)
+			return false;
+
+		if (err != RESULT_OK)
+		{
+			return false;
+		}
+
+		return true;
 	}
 
 	void Session::ProcessDisconnect(DisconnectEvent* disconnectEvent)
@@ -241,6 +320,15 @@ namespace servercore
 			switch (networkEvent->GetNetworkEventType())
 			{
 			case NetworkEventType::Connect:
+				{
+					ConnectEvent* connectEvent = static_cast<ConnectEvent*>(networkEvent);
+					if(connectEvent)
+					{
+						auto networkObject = shared_from_this();
+						connectEvent->SetOwner(networkObject);
+						ProcessConnect(connectEvent);
+					}
+				}
 				break;
 			case NetworkEventType::Recv:
 			{
@@ -265,6 +353,7 @@ namespace servercore
 				break;
 			}
 			case NetworkEventType::Error:
+				break;
 			default:
 				//	???
 				break;

@@ -70,7 +70,7 @@ namespace servercore
 
         //  networkobject ( Session , Acceptor ) Event 등록
         struct epoll_event epollEv;
-        epollEv.events = EPOLLIN | EPOLLET;
+        epollEv.events = EPOLLIN | EPOLLET | EPOLLERR | EPOLLHUP;
         epollEv.data.ptr = networkObject.get();
 
         if(::epoll_ctl(_epollFd, EPOLL_CTL_ADD, networkObject->GetSocketFd(), &epollEv) == RESULT_ERROR)
@@ -155,34 +155,34 @@ namespace servercore
                     }
                 }
 
-                //  SendEvent   
-                //  ...TODO
                 if((events & EPOLLOUT) != 0)
                 {
-                    // if (networkObjectType == NetworkObjectType::Session)
-                    // {
-                    //     auto session = static_cast<Session *>(networkObject);
+                    if (networkObjectType == NetworkObjectType::Session)
+                    {
+                        auto session = static_cast<Session *>(networkObject);
 
-                    //     if (session)
-                    //     {
-                    //         if (session->IsConnectPending() == true)
-                    //         {
-                    //             //  connect
-                    //             LinuxConnectEvent *connectEvent = cnew<LinuxConnectEvent>();
-                    //             session->Dispatch(connectEvent, true, static_cast<int32>(ErrorCode::Success));
-                    //         }
-                    //         else
-                    //         {
-                    //             //  send
-                    //             LinuxSendEvent *sendEvent = cnew<LinuxSendEvent>();
-                    //             session->Dispatch(sendEvent, true, static_cast<int32>(ErrorCode::Success));
-                    //         }
-                    //     }
-                    // }
-                    // else
-                    // {
-                    //     ; //  ????
-                    // }
+                        if (session)
+                        {
+                            if(session->IsConnectPending() == true)
+                            {
+                                //  connect
+                                ConnectEvent *connectEvent = cnew<ConnectEvent>();
+                                session->Dispatch(connectEvent);
+                            }
+                            else
+                            {
+                                //  send enable   
+                                
+                            }
+                        }
+                    }
+                    else if(networkObjectType == NetworkObjectType::Acceptor)
+                    {
+                        ;
+                    }
+                    {
+                        ;
+                    }
                 }
             }
         }
@@ -199,8 +199,28 @@ namespace servercore
         ::write(_exitSignalEventPipe[1], buffer, sizeof(buffer));
     }
 
-    // 지금은 더 못 보냄 → 나중에 "쓸 수 있게 되면" 알려달라
+    bool EpollDispatcher::EnableConnectEvent(std::shared_ptr<INetworkObject> networkObject)
+    {
+        return EnableEvent(networkObject);
+    }
+
+    bool EpollDispatcher::DisableConnectEvent(std::shared_ptr<INetworkObject> networkObject)
+    {
+        return DisableConnectEvent(networkObject);
+    }
+
     bool EpollDispatcher::EnableSendEvent(std::shared_ptr<INetworkObject> networkObject)
+    {
+        return EnableEvent(networkObject);
+    }
+
+    bool EpollDispatcher::DisableSendEvent(std::shared_ptr<INetworkObject> networkObject)
+    {
+        return DisableConnectEvent(networkObject);
+    }
+
+    // 지금은 더 못 보냄 → 나중에 "쓸 수 있게 되면" 알려달라
+    bool EpollDispatcher::EnableEvent(const std::shared_ptr<INetworkObject>& networkObject)
     {
         if(networkObject == nullptr)
             return false;
@@ -216,7 +236,7 @@ namespace servercore
     }
 
     // sendQueue가 비었다 = 더 보낼 게 없다
-    bool EpollDispatcher::DisableSendEvent(std::shared_ptr<INetworkObject> networkObject)
+    bool EpollDispatcher::DisableEvent(const std::shared_ptr<INetworkObject>& networkObject)
     {
         if(networkObject == nullptr)
             return false;

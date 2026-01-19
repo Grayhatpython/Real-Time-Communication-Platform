@@ -14,7 +14,7 @@ namespace servercore
 
     public:
         virtual NetworkObjectType   GetNetworkObjectType() override;
-        virtual SocketFd            GetSocketFd() override { return _socketFd; }
+        virtual SocketFd            GetSocketFd() const override { return _socketFd; }
         virtual void                Dispatch(INetworkEvent* networkEvent) override;
 
     public:
@@ -29,12 +29,17 @@ namespace servercore
         virtual void OnSend() {};
 
     private:
+        //  결과값 기반으로 에러처리 상세히 !
 		void		ProcessConnect();
+        void        ProcessConnect(ConnectEvent* connectEvent);
 		void		ProcessDisconnect(DisconnectEvent* disconnectEvent);
 		void		ProcessRecv(RecvEvent* recvEvent);
 		void		ProcessSend(SendEvent* sendEvent);
 
 		void		CloseSocket();
+
+        bool        QueryConnectError();
+
 	public:
 		void								SetNetworkDispatcher(std::shared_ptr<INetworkDispatcher> networkDispatcher) { _networkDispatcher = networkDispatcher; }
 		std::shared_ptr<INetworkDispatcher>	GetNetworkDispatcher() { return _networkDispatcher; }
@@ -45,6 +50,7 @@ namespace servercore
 		NetworkAddress		GetRemoteAddress() const { return _remoteAddress; }
 
 		bool				IsConnected() const { return _isConnected.load(); }
+        bool                IsConnectPending() const { return _isConnectPending.load(std::memory_order_acquire); }
 		uint64				GetSessionId() const { return _sessionId; }
 
     private:
