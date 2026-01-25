@@ -32,12 +32,15 @@ namespace servercore
 
 	enum class DispatchResult
 	{
+		//	결과를 더 세부적으로..
 		EventTriggered = 100,
 		Timeout,
 		Interrupted,
 		ExitRequested,
 		FatalError,
-		Dispatched,
-		InvalidDispatcher
+		NetworkEventDispatched,
+		InvalidDispatcher,
+
+		ControlEventDispatched = 200
 	};
 }

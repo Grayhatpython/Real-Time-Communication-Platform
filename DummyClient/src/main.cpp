@@ -133,48 +133,57 @@ private:
 
 int main(int argc, char* argv[])
 {
-       //  SessionFactory 
-    std::function<std::shared_ptr<ServerSession>(void)> sessionFactory = []() {
-        return servercore::MakeShared<ServerSession>();
-    };
-
-    std::unique_ptr<servercore::Client> client = std::make_unique<servercore::Client>(sessionFactory);
-    servercore::NetworkAddress targetAddress{"127.0.0.1", 8000};
-    bool successed = client->Connect(targetAddress);
-
-    if(successed == false)
-        return RESULT_ERROR;
-
-
-    auto start = std::chrono::high_resolution_clock::now();
-
-    for (int i = 0; i < 1; i++)
     {
-        servercore::GThreadManager->Launch([&client]() {
-                while(true)
-                {
-                    auto dispatchResult = client->NetworkDispatch();
+        //  SessionFactory 
+        std::function<std::shared_ptr<ServerSession>(void)> sessionFactory = []() {
+            return servercore::MakeShared<ServerSession>();
+        };
 
-                    //  TODO
-                    if(dispatchResult == servercore::DispatchResult::InvalidDispatcher || 
-                        dispatchResult == servercore::DispatchResult::ExitRequested)
+        std::unique_ptr<servercore::Client> client = std::make_unique<servercore::Client>(sessionFactory);
+        servercore::NetworkAddress targetAddress{"127.0.0.1", 8000};
+        bool successed = client->Connect(targetAddress);
+
+        if(successed == false)
+            return RESULT_ERROR;
+
+
+        auto start = std::chrono::high_resolution_clock::now();
+
+        for (int i = 0; i < 1; i++)
+        {
+            servercore::GThreadManager->Launch([&client]() {
+                    while(true)
                     {
-                        //  server->Stop();
-                        break;
-                    }
-                }   
-            },"Dispatch Thread");
+                        auto dispatchResult = client->NetworkDispatch();
+
+                        //  TODO
+                        if(dispatchResult == servercore::DispatchResult::InvalidDispatcher || 
+                            dispatchResult == servercore::DispatchResult::ExitRequested)
+                        {
+                            break;
+                        }
+                    }   
+                },"Dispatch Thread");
+        }
+        
+        char input;
+
+        std::cin >> input;
+
+        if(input == 'c' || input == 'C')
+        {
+            client->Stop();
+        }
+
+
+        auto end = std::chrono::high_resolution_clock::now();
+        
+        std::chrono::duration<double, std::milli> duration = end - start;
+
+        std::cout << "시간 : " << duration.count() << " ms" << std::endl;
+
     }
-    
-    servercore::GThreadManager->Join();
-
-    auto end = std::chrono::high_resolution_clock::now();
-    
-    std::chrono::duration<double, std::milli> duration = end - start;
-
-    std::cout << "시간 : " << duration.count() << " ms" << std::endl;
 
     return 0;
- 
-    return 0;
+
 }

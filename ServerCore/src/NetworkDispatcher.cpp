@@ -3,6 +3,7 @@
 #include "NetworkUtils.hpp"
 #include "Session.hpp"
 #include "Acceptor.hpp"
+#include "SessionManager.hpp"
 
 namespace servercore
 {
@@ -12,19 +13,22 @@ namespace servercore
     
     EpollDispatcher::~EpollDispatcher() 
     {
-        if(_epollFd)
+        if(_controlEvents.shutdownFd != INVALID_EVENT_FD_VALUE)
+        {
+            ::close(_controlEvents.shutdownFd);
+            _controlEvents.shutdownFd = INVALID_EVENT_FD_VALUE;
+        }
+
+        if(_controlEvents.removeSessionFd != INVALID_EVENT_FD_VALUE)
+        {
+            ::close(_controlEvents.removeSessionFd);
+            _controlEvents.removeSessionFd = INVALID_EVENT_FD_VALUE;
+        }
+
+        if(_epollFd != INVALID_EPOLL_FD_VALUE)
         {
             ::close(_epollFd);
             _epollFd = INVALID_EPOLL_FD_VALUE;
-        }
-
-        for(int i = 0; i < 2; i++)
-        {
-            if(_exitSignalEventPipe[i] >= 0)
-            {
-                ::close(_exitSignalEventPipe[i]);
-                _exitSignalEventPipe[i] = INVALID_FILE_DESCRIPTOR_VALUE;
-            }
         }
     }
 
@@ -34,28 +38,7 @@ namespace servercore
         if(_epollFd == INVALID_EPOLL_FD_VALUE)
             return false;
 
-        //  pipe() 함수를 호출하여 두 개의 파일 디스크립터를 가진 파이프를 생성
-        //  파이프는 단방향 통신을 위한 커널 객체
-        //  _exitSignalEventPipe[0]은 파이프의 읽기 끝(read end)이고, _exitSignalEventPipe[1]은 파이프의 쓰기 끝(write end)
-        //  디스패처 스레드를 안전하게 종료하기 위한 "종료 시그널" 메커니즘으로 사용
-        //  다른 스레드에서 _exitSignalEventPipe[1]에 데이터를 쓰면, epoll_wait에서 _exitSignalEventPipe[0]에 이벤트가 발생하여 디스패처 스레드가 깨어나 종료 처리
-        if(::pipe(_exitSignalEventPipe) == RESULT_ERROR)
-            return false;
-
-        //  read end / write end 둘 다 non-blocking
-        for(int i = 0; i < 2; i++)
-        {
-            if(NetworkUtils::SetNonBlocking(_exitSignalEventPipe[i]) == false)
-                return false;
-        }
-
-        //  pipe의 read end에 데이터가 들어오면(=누가 write 했다면) epoll이 깨워라
-        struct epoll_event epollEv;
-        epollEv.events = EPOLLIN;
-        epollEv.data.fd = _exitSignalEventPipe[0];
-
-        //  epoll_wait -> exitSignalEventPipe[0]에 데이터가 쓰여지면 이벤트를 감지
-        if(::epoll_ctl(_epollFd, EPOLL_CTL_ADD,_exitSignalEventPipe[0], &epollEv) == RESULT_ERROR)
+        if(RegisterShutdownFd() == false || RegisterRemoveSessionFd() == false)
             return false;
 
         _epollEvents.resize(S_DEFALUT_EPOLL_EVENT_SIZE);
@@ -63,6 +46,40 @@ namespace servercore
         return true;
     }
     
+    bool EpollDispatcher::RegisterShutdownFd()
+    {
+        _controlEvents.shutdownFd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+        if (_controlEvents.shutdownFd == RESULT_ERROR) 
+            return false;
+
+        epoll_event epollEvent{};
+        // counter > 0 이면 readable
+        epollEvent.events = EPOLLIN;                 
+        epollEvent.data.fd = _controlEvents.shutdownFd;
+
+        if(::epoll_ctl(_epollFd, EPOLL_CTL_ADD,_controlEvents.shutdownFd , &epollEvent) == RESULT_ERROR)
+            return false;
+
+        return true;
+    }
+
+    bool EpollDispatcher::RegisterRemoveSessionFd()
+    {
+        _controlEvents.removeSessionFd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+        if (_controlEvents.removeSessionFd == RESULT_ERROR) 
+            return false;
+
+        epoll_event epollEvent{};
+        // counter > 0 이면 readable
+        epollEvent.events = EPOLLIN;                 
+        epollEvent.data.fd = _controlEvents.removeSessionFd;
+
+        if(::epoll_ctl(_epollFd, EPOLL_CTL_ADD,_controlEvents.removeSessionFd , &epollEvent) == RESULT_ERROR)
+            return false;
+
+        return true;
+    }
+
     bool EpollDispatcher::Register(std::shared_ptr<INetworkObject> networkObject)
     {
         if(networkObject == nullptr)
@@ -96,11 +113,16 @@ namespace servercore
         {
             for(int32 i = 0 ; i < numOfEvents; i++)
             {
-                if(_epollEvents[i].data.fd == _exitSignalEventPipe[0])
+                if(_epollEvents[i].data.fd == _controlEvents.shutdownFd)
                 {
-                    char buffer[0];
-                    ::read(_exitSignalEventPipe[0], buffer, sizeof(buffer));
                     return DispatchResult::ExitRequested;
+                }
+
+                if(_epollEvents[i].data.fd == _controlEvents.removeSessionFd)
+                {
+                    //  TODO
+                    GSessionManager->RemoveSession();
+                    return DispatchResult::ControlEventDispatched;
                 }
 
                 auto networkObject = static_cast<INetworkObject*>(_epollEvents[i].data.ptr);
@@ -190,13 +212,32 @@ namespace servercore
         if(numOfEvents == static_cast<int32>(_epollEvents.size()))
             _epollEvents.resize(_epollEvents.size() * 2);
 
-        return DispatchResult::Dispatched;
+        return DispatchResult::ControlEventDispatched;
     }
 
-    void EpollDispatcher::PostExitSignal()
+    void EpollDispatcher::PostShutdownEvent()
     {
-        char buffer[1] = {'q'};
-        ::write(_exitSignalEventPipe[1], buffer, sizeof(buffer));
+        PostEventSignal(_controlEvents.shutdownFd);
+    }
+
+    void EpollDispatcher::PostSessionRemoveEvent()
+    {
+        PostEventSignal(_controlEvents.removeSessionFd);   
+    }
+
+    void EpollDispatcher::PostEventSignal(EventFd controlEvent)
+    {
+        uint64 signal = 1;
+        ssize_t n = ::write(controlEvent, &signal, sizeof(signal));
+        if (n < 0)
+        {
+            // EAGAIN이면 counter가 이미 충분히 쌓여있거나(드물지만) 일시적 상황
+            // 깨우기 목적은 이미 달성됐을 가능성이 높으므로 무시해도 됨.
+            if (errno != EAGAIN && errno != EINTR) 
+            {
+                
+            }
+        }
     }
 
     bool EpollDispatcher::EnableConnectEvent(std::shared_ptr<INetworkObject> networkObject)
@@ -206,7 +247,7 @@ namespace servercore
 
     bool EpollDispatcher::DisableConnectEvent(std::shared_ptr<INetworkObject> networkObject)
     {
-        return DisableConnectEvent(networkObject);
+        return DisableEvent(networkObject);
     }
 
     bool EpollDispatcher::EnableSendEvent(std::shared_ptr<INetworkObject> networkObject)
@@ -216,7 +257,7 @@ namespace servercore
 
     bool EpollDispatcher::DisableSendEvent(std::shared_ptr<INetworkObject> networkObject)
     {
-        return DisableConnectEvent(networkObject);
+        return DisableEvent(networkObject);
     }
 
     // 지금은 더 못 보냄 → 나중에 "쓸 수 있게 되면" 알려달라

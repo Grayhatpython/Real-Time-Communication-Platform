@@ -60,12 +60,18 @@ namespace servercore
 
 	void Acceptor::Stop()
 	{
-        //  TODO
-		auto epollDispatcher = std::static_pointer_cast<EpollDispatcher>(_networkDispatcher);
-		if(epollDispatcher->UnRegister(shared_from_this()) == false)
-			;	//	???
+        if(_networkDispatcher)
+		{
+			auto epollDispatcher = std::static_pointer_cast<EpollDispatcher>(_networkDispatcher);
+			if(epollDispatcher)
+				epollDispatcher->UnRegister(shared_from_this());
+		}
 
-		NetworkUtils::CloseSocketFd(_listenSocketFd);
+		if(_listenSocketFd != INVALID_SOCKET_FD_VALUE)
+		{
+			NetworkUtils::CloseSocketFd(_listenSocketFd);
+			_listenSocketFd = INVALID_SOCKET_FD_VALUE;
+		}	
 	}
 
 	void Acceptor::Dispatch(INetworkEvent* networkEvent)

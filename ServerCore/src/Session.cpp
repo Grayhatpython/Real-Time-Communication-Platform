@@ -46,7 +46,7 @@ namespace servercore
 		_state.store(SessionState::ConnectPending, std::memory_order_release);
 
 		int32 ret = ::connect(_socketFd, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
-		
+
 		if(ret == RESULT_OK)
 		{
 			if(_networkDispatcher->Register(shared_from_this()) == false)
@@ -59,7 +59,7 @@ namespace servercore
 			ProcessConnect();
 		}
 
-		if(ret < 0)
+		if(ret == RESULT_ERROR)
 		{
 			//	EINPROGRESS 경우 연결이 즉시 완료되지 않았지만, 백그라운드에서 진행 중
 			// 	이 경우 이후 epoll 등으로 EPOLLOUT 이벤트를 기다려 연결 완료를 감지
@@ -87,18 +87,8 @@ namespace servercore
 			auto session = shared_from_this();
 			disconnectEvent->SetOwner(session);
 
-			auto epollDispatcher = std::static_pointer_cast<EpollDispatcher>(_networkDispatcher);
-			if(epollDispatcher)
-			{
-				bool successed = epollDispatcher->UnRegister(shared_from_this());
-				if(successed == false)
-					;	//	?
-			}
-			else
-			{
-				//?
-			}
-
+			CloseSocket();
+			
 			ProcessDisconnect(disconnectEvent);
 		}
 		else
@@ -129,6 +119,9 @@ namespace servercore
 
 	bool Session::RegisterAsyncConnect()
 	{
+		if(_networkDispatcher == nullptr)
+			return false;
+
 		if(_networkDispatcher->Register(shared_from_this()) == false)
 		{
 			NetworkUtils::CloseSocketFd(_socketFd);
@@ -139,14 +132,14 @@ namespace servercore
 		auto epollDispatcher = std::static_pointer_cast<EpollDispatcher>(_networkDispatcher);
 		if(epollDispatcher == nullptr)
 		{
-			NetworkUtils::CloseSocketFd(_socketFd);
+			CloseSocket();
 			_state.store(SessionState::Disconnected, std::memory_order_release);
 			return false;
 		}
 
 		if(epollDispatcher->EnableConnectEvent(shared_from_this()) == false)
 		{
-			NetworkUtils::CloseSocketFd(_socketFd);
+			CloseSocket();
 			_state.store(SessionState::Disconnected, std::memory_order_release);
 			return false;
 		}
@@ -157,21 +150,34 @@ namespace servercore
 	//	Server Accept4() -> ProcessConnect
 	void Session::ProcessConnect()
 	{
+		_state.store(SessionState::Connected, std::memory_order_release);
+
 		//	Server Client Contents 
 		OnConnected();
 
-		_state.store(SessionState::Connected, std::memory_order_release);
 	}
 
 	//	Client Connect() -> ProcessConnect
 	void Session::ProcessConnect(ConnectEvent* connectEvent)
 	{
+		if(connectEvent)
+		{
+			cdelete(connectEvent);
+			connectEvent = nullptr;
+		}
+
 		//	TODO
 		//	그만
 		if(QueryConnectError() == false)
 		{
+			_state.store(SessionState::Disconnected, std::memory_order_release);
 			CloseSocket();
+			return;
 		}
+
+		//	TODO
+		if(_networkDispatcher == nullptr)
+			return;
 
 		auto epollDispatcher = std::static_pointer_cast<EpollDispatcher>(_networkDispatcher);
 		if(epollDispatcher)
@@ -182,15 +188,8 @@ namespace servercore
 			}
 		}
 
-		OnConnected();
-		
 		_state.store(SessionState::Connected, std::memory_order_release);
-
-		if(connectEvent)
-		{
-			cdelete(connectEvent);
-			connectEvent = nullptr;
-		}
+		OnConnected();
 	}
 
 	bool Session::QueryConnectError()
@@ -212,8 +211,6 @@ namespace servercore
 	{	
 		OnDisconnected();
 
-		CloseSocket();
-
 		if(disconnectEvent)
 		{
 			cdelete(disconnectEvent);
@@ -223,7 +220,9 @@ namespace servercore
 		//	TODO
 		auto session = std::static_pointer_cast<Session>(shared_from_this());
 		if(session)
-			GSessionManager->RemoveSession(session);
+		{
+			GSessionManager->RequestRemoveSessionEvent(_sessionId);
+		}
 	}
 
 	void Session::ProcessRecv(RecvEvent* recvEvent)
@@ -232,7 +231,6 @@ namespace servercore
 		{
 			;
 		}
-
 
 		while(true)
 		{
@@ -317,16 +315,23 @@ namespace servercore
 
 	}
 
-	void Session::CloseSocket()
-	{
-		auto linuxEpollDispatcher = std::static_pointer_cast<EpollDispatcher>(_networkDispatcher);
-		if(linuxEpollDispatcher->UnRegister(shared_from_this()) == false)
-			;	//	???
+    void Session::CloseSocket()
+    {
+		if(_networkDispatcher)
+		{
+			auto epollDispatcher = std::static_pointer_cast<EpollDispatcher>(_networkDispatcher);
+			if(epollDispatcher)
+				epollDispatcher->UnRegister(shared_from_this());
+		}
 
-		NetworkUtils::CloseSocketFd(_socketFd);
-	}
+		if(_socketFd != INVALID_SOCKET_FD_VALUE)
+		{
+			NetworkUtils::CloseSocketFd(_socketFd);
+			_socketFd = INVALID_SOCKET_FD_VALUE;
+		}			
+    }
 
-	void Session::Dispatch(INetworkEvent* networkEvent)
+    void Session::Dispatch(INetworkEvent* networkEvent)
 	{
 		if(networkEvent)
 		{

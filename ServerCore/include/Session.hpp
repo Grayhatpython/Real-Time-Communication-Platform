@@ -44,8 +44,7 @@ namespace servercore
 		void		ProcessRecv(RecvEvent* recvEvent);
 		void		ProcessSend(SendEvent* sendEvent);
 
-		void		CloseSocket();
-
+        void        CloseSocket();
 
 	public:
 		void								SetNetworkDispatcher(std::shared_ptr<INetworkDispatcher> networkDispatcher) { _networkDispatcher = networkDispatcher; }

@@ -8,11 +8,13 @@ namespace servercore
 		Running,
 		Completed,
 		Canceled,
+		Failed
 	};
+
+	using CallbackFunc = std::function<void()>;
 
 	class Task
 	{
-		using CallbackFunc = std::function<void()>;
 
 	public:
 		Task(CallbackFunc func, const std::string& name = "");
@@ -22,16 +24,13 @@ namespace servercore
 		void Execute();
 		bool Cancel();
 
+	private:
+		bool TryStart();
+
 	public:
 		const std::string& GetName() const { return _name; }
-		TaskStatus GetStatus() const { return _status.load(); }
-		bool IsDone() const 
-		{
-			TaskStatus status = _status.load();
-			return status == TaskStatus::Completed ||
-				status == TaskStatus::Canceled;
-
-		}
+		TaskStatus GetStatus() const { return _status.load(std::memory_order_relaxed); }
+		bool IsDone() const;
 
 	private:
 		std::string					_name;
@@ -43,7 +42,9 @@ namespace servercore
 	class TaskQueue
 	{
 	public:
-		void Push(std::shared_ptr<Task> task);
+		void 					Push(std::shared_ptr<Task> task);
+		std::shared_ptr<Task>	Push(CallbackFunc func, const std::string& name = "");
+
 		std::shared_ptr<Task> Pop();
 
 		bool IsEmpty() const;

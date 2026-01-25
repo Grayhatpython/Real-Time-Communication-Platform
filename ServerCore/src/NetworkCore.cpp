@@ -15,12 +15,16 @@ namespace servercore
 
     INetworkCore::~INetworkCore()
     {
-        GlobalContext::GetInstance().Clear();
+
     }
 
     void INetworkCore::Stop()
     {
+        _networkDispatcher->PostExitSignal();
 
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+        GlobalContext::GetInstance().Clear();
     }
 
     DispatchResult INetworkCore::NetworkDispatch(uint32 timeoutMs)
@@ -59,7 +63,7 @@ namespace servercore
 
     Server::~Server()
     {
-
+        
     }
 
     bool Server::Start(uint16 port)
@@ -84,7 +88,13 @@ namespace servercore
 
     void Server::Stop()
     {
-        //  TODO 
+        if(_isRunning.load(std::memory_order_acquire) == false)
+            return;
+        
+        std::cout << "Server Stopping..." << std::endl;
+
+        if(_acceptor)
+            _acceptor->Stop();
 
         INetworkCore::Stop();
     }
@@ -125,8 +135,11 @@ namespace servercore
 
     void Client::Stop()
     {
-        //  TODO 
-        
+        if(_isRunning.load(std::memory_order_acquire) == false)
+            return;
+
+        std::cout << "Client Stopping..." << std::endl;
+
         INetworkCore::Stop();
     }
     

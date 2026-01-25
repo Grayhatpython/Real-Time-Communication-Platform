@@ -54,7 +54,6 @@ namespace servercore
     public:
         virtual bool Register(std::shared_ptr<INetworkObject> networkObject) = 0;
         virtual DispatchResult Dispatch(uint32 timeoutMs = TIMEOUT_INFINITE) = 0;
-        virtual void PostExitSignal() = 0;
     };
 
     class SendBuffer;

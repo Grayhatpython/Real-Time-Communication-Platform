@@ -4,34 +4,71 @@
 namespace servercore
 {
 	Task::Task(CallbackFunc func, const std::string& name)
-		: _name(name), _func(func)
+		: _name(std::move(name)), _func(std::move(func))
 	{
 
 	}
 
 	void Task::Execute()
 	{
-		if (_cancelRequested.load() == true)
+		// 이미 취소되었거나, 이미 실행/완료됨
+		if(TryStart() == false)
+			return;
+
+		// 2) 실행 직전 취소 확인
+		if(_cancelRequested.load(std::memory_order_relaxed) == true)
 		{
-			_status.store(TaskStatus::Canceled);
+			_status.store(TaskStatus::Canceled, std::memory_order_release);
 			return;
 		}
 
-		if (_func)
+		//	실행
+		if(_func)
 		{
-			_status.store(TaskStatus::Running);
 			_func();
-			_status.store(TaskStatus::Completed);
+			_status.store(TaskStatus::Completed, std::memory_order_release);
+		}
+		else
+		{
+			//	일감이 없는데 실행?
+			_status.store(TaskStatus::Failed, std::memory_order_release);
 		}
 	}
 
+	// Created 상태면 "확정 취소" (Created -> Canceled)
+    // 이미 Running 이후면 "요청만" 걸고 false 반환
 	bool Task::Cancel()
 	{
-		_cancelRequested.store(true);
-		return true;
+		_cancelRequested.store(true, std::memory_order_relaxed);
+
+        TaskStatus expected = TaskStatus::Created;
+        if (_status.compare_exchange_strong(
+                expected, TaskStatus::Canceled,
+                std::memory_order_relaxed,
+                std::memory_order_relaxed))
+        {
+            return true; // 실행 전에 취소 확정
+        }
+
+        return false; // 이미 시작했거나 완료됨(확정 취소 불가)
 	}
 
-	void TaskQueue::Push(std::shared_ptr<Task> task)
+    bool Task::TryStart()
+    {
+		TaskStatus expected = TaskStatus::Created;
+
+		 // 1) 실행 권한 획득: Created -> Running
+		return _status.compare_exchange_strong(expected, TaskStatus::Running, 
+			std::memory_order_relaxed, std::memory_order_relaxed);
+    }
+
+    bool Task::IsDone() const
+    {
+     	auto status = GetStatus();
+        return status == TaskStatus::Completed || status == TaskStatus::Canceled || status == TaskStatus::Failed;
+    }
+
+    void TaskQueue::Push(std::shared_ptr<Task> task)
 	{
 		{
 			std::lock_guard<std::mutex> lock(_lock);
@@ -42,6 +79,22 @@ namespace servercore
 		}
 
 		_cv.notify_one();
+	}
+
+	std::shared_ptr<Task> TaskQueue::Push(CallbackFunc func, const std::string& name)
+	{
+		auto task = std::make_shared<Task>(std::move(func), std::move(name));
+
+		{
+			std::lock_guard<std::mutex> lock(_lock);
+			if (_shutdown)
+				return;
+
+			_tasks.push(task);
+		}
+
+		_cv.notify_one();
+		return task;
 	}
 
 	std::shared_ptr<Task> TaskQueue::Pop()
@@ -65,9 +118,9 @@ namespace servercore
 
 	void TaskQueue::Clear()
 	{
-		std::lock_guard<std::mutex> lock(_lock);
-		while (_tasks.empty() == false)
-			_tasks.pop();
+	    std::lock_guard<std::mutex> lock(_lock);
+		std::queue<std::shared_ptr<Task>> empty;
+		_tasks.swap(empty);
 	}
 
 	void TaskQueue::NotifyOne()
