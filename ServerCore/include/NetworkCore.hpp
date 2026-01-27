@@ -17,13 +17,17 @@ namespace servercore
 
     public:
         virtual void Stop();
-        DispatchResult NetworkDispatch(uint32 timeoutMs = TIMEOUT_INFINITE);
+    
+    protected:
+        void NetworkDispatch();
 
     private:
         void Initialize(std::function<std::shared_ptr<Session>()> sessionFactory);
 
     protected:
         std::shared_ptr<INetworkDispatcher>             _networkDispatcher;
+
+        std::thread                                     _dispatchThread;
 
         std::mutex                                      _mutex;
         std::condition_variable                         _cv;

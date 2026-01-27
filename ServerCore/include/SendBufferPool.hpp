@@ -12,11 +12,14 @@ namespace servercore
 
     public:
         std::shared_ptr<SendBuffer> Pop();
-        static void Push(SendBuffer* sendBuffer);
+        void                        Push(SendBuffer* sendBuffer);
+
+    public:
+        static void ReturnSendBufferToPool(SendBuffer* sendBuffer);
         static void ReleaseSendBufferDeleter();
 
     private:
-        std::queue<std::shared_ptr<SendBuffer>>     _pool;
+        std::queue<SendBuffer*>                     _pool;
         std::mutex                                  _lock;
         static bool                                 S_SendBufferDeleterRelease;
     };

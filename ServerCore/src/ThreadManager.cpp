@@ -161,23 +161,27 @@ namespace servercore
 
 	ThreadManager::~ThreadManager()
 	{
-		Close();
-		Join();
-		ShutdownThreadPool();
+
 	}
 
-	void ThreadManager::Launch(std::function<void()> callback, const std::string& threadName)
+	void ThreadManager::Launch(std::function<void()> callback, const std::string& threadName,  bool repeated)
 	{
-		if (_stopped.load() == true)
+		if (_stopped.load(std::memory_order_acquire) == true)
 			return;
 
 		std::lock_guard<std::mutex> lock(_lock);
 
-		_threads.push_back(std::thread([this, callback, threadName]() {
+		_threads.push_back(std::thread([this, callback, threadName, repeated]() {
 			
 			InitializeThreadLocal();
 
-			callback();
+			if(repeated == true)
+			{
+				while(_stopped.load(std::memory_order_acquire) == false)
+					callback();
+			}
+			else
+				callback();
 
 			DestroyThreadLocal();
 
@@ -195,21 +199,25 @@ namespace servercore
 		_threads.clear();
 	}
 
-	void ThreadManager::Close()
+	void ThreadManager::Stop()
 	{
-		_stopped.store(true);
-		_taskQueue->NotifyAll();
+		_stopped.store(true, std::memory_order_release);
+
+		Join();
+
+		//	Thread Pool은 아직...
+		ShutdownThreadPool();
 	}
 
 	void ThreadManager::InitializeThreadPool(int32 threadCount)
 	{
-		if (_poolRunning.load() == true)
+		if (_poolRunning.load(std::memory_order_acquire) == true)
 			return;
 
 		if (threadCount <= 0)
 			threadCount = std::thread::hardware_concurrency();
 
-		_poolRunning.store(true);
+		_poolRunning.store(true, std::memory_order_release);
 
 		for (int32 i = 0; i < threadCount; i++)
 		{
@@ -221,7 +229,7 @@ namespace servercore
 
 	void ThreadManager::ShutdownThreadPool()
 	{
-		_poolRunning.store(false);
+		_poolRunning.store(true, std::memory_order_release);
 		_taskQueue->Shutdown();
 
 		for (auto& thread : _threadPool)
@@ -259,7 +267,7 @@ namespace servercore
 	{
 		InitializeThreadLocal();
 
-		while (_poolRunning.load() == true)
+		while (_poolRunning.load(std::memory_order_acquire) == true)
 		{
 			auto task = _taskQueue->Pop();
 			if (task)

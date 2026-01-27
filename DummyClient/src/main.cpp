@@ -37,42 +37,44 @@ public:
             currentIndex = rangeEnd;
 
             servercore::GThreadManager->Launch([&serverSesions, rangeStart, rangeEnd]() {
-                    for (auto j = rangeStart; j < rangeEnd; j++)
-                    {
-                        const auto& session = serverSesions[j];
-                        if (session == nullptr)
-                            continue;
+  
+                        for (auto j = rangeStart; j < rangeEnd; j++)
+                        {
+                            const auto& session = serverSesions[j];
+                            if (session == nullptr)
+                                continue;
 
-                        // 1. SendBuffer 할당
-                        auto segment = servercore::SendBufferArena::Allocate(sizeof(TestPacket));
+                            // 1. SendBuffer 할당
+                            auto segment = servercore::SendBufferArena::Allocate(sizeof(TestPacket));
 
-                        // 2. 할당 성공 여부 명시적 확인 (assert 대체)
-                        if (segment->successed == false) {
-                            // 실무: 메모리 풀 고갈 상황에 대한 로그 및 통계 처리
-                            std::cerr << "SendBuffer allocation failed for session: " << session->GetSessionId() << ". Skipping." << std::endl;
-                            continue; // 이 세션에 대한 전송은 건너뜀
+                            // 2. 할당 성공 여부 명시적 확인 (assert 대체)
+                            if (segment->successed == false) {
+                                // 실무: 메모리 풀 고갈 상황에 대한 로그 및 통계 처리
+                                std::cerr << "SendBuffer allocation failed for session: " << session->GetSessionId() << ". Skipping." << std::endl;
+                                continue; // 이 세션에 대한 전송은 건너뜀
+                            }
+
+                            std::cout << "Test" << std::endl;
+
+                            // 3. 패킷 구성
+                            TestPacket* testPacket = reinterpret_cast<TestPacket*>(segment->ptr);
+                            testPacket->id = 3;
+                            testPacket->playerId = 3;
+                            testPacket->playerMp = 6;
+                            testPacket->size = sizeof(TestPacket);
+
+                            // 4. SendContext 생성 및 전송 요청
+                            auto sendContext = std::make_shared<servercore::SendContext>();
+                            sendContext->sendBuffer = segment->sendBuffer;
+                            sendContext->iovecBuf.iov_base = segment->ptr;
+                            sendContext->iovecBuf.iov_len = static_cast<size_t>(testPacket->size);
+
+                            session->TryFlushSend(sendContext);
                         }
 
-                        std::cout << "Test" << std::endl;
-
-                        // 3. 패킷 구성
-                        TestPacket* testPacket = reinterpret_cast<TestPacket*>(segment->ptr);
-                        testPacket->id = 3;
-                        testPacket->playerId = 3;
-                        testPacket->playerMp = 6;
-                        testPacket->size = sizeof(TestPacket);
-
-                        // 4. SendContext 생성 및 전송 요청
-                        auto sendContext = std::make_shared<servercore::SendContext>();
-                        sendContext->sendBuffer = segment->sendBuffer;
-                        sendContext->iovecBuf.iov_base = segment->ptr;
-                        sendContext->iovecBuf.iov_len = static_cast<size_t>(testPacket->size);
-
-                        session->TryFlushSend(sendContext);
-                    }
-
-                    std::this_thread::sleep_for(std::chrono::seconds(1));
-                });
+                        std::this_thread::sleep_for(std::chrono::seconds(1));
+                   
+                },"Send Test Thread",true);
         }
     }
 };
@@ -124,23 +126,6 @@ int main(int argc, char* argv[])
 
         auto start = std::chrono::high_resolution_clock::now();
 
-        for (int i = 0; i < 1; i++)
-        {
-            servercore::GThreadManager->Launch([&client]() {
-                    while(true)
-                    {
-                        auto dispatchResult = client->NetworkDispatch();
-
-                        //  TODO
-                        if(dispatchResult == servercore::DispatchResult::InvalidDispatcher || 
-                            dispatchResult == servercore::DispatchResult::ExitRequested)
-                        {
-                            break;
-                        }
-                    }   
-                },"Dispatch Thread");
-        }
-    
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
         //  TEST

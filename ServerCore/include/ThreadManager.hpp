@@ -72,9 +72,9 @@ namespace servercore
 		~ThreadManager();
 
 	public:
-		void Launch(std::function<void()> callback, const std::string& threadName = "");
+		void Launch(std::function<void()> callback, const std::string& threadName = "", bool repeated = false);
 		void Join();
-		void Close();
+		void Stop();
 
 	public:
 		void InitializeThreadPool(int32 threadCount = 0);

@@ -19,6 +19,7 @@ namespace servercore
         
     public:
         bool Initialize();
+        void Stop();
         
     private:
         bool RegisterShutdownFd();

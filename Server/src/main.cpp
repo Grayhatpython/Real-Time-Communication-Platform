@@ -56,23 +56,6 @@ int main()
 
         auto start = std::chrono::high_resolution_clock::now();
 
-        for (int i = 0; i < 1; i++)
-        {
-            servercore::GThreadManager->Launch([&server]() {
-                    while(true)
-                    {
-                        auto dispatchResult = server->NetworkDispatch();
-
-                        //  TODO
-                        if(dispatchResult == servercore::DispatchResult::InvalidDispatcher || 
-                            dispatchResult == servercore::DispatchResult::ExitRequested)
-                        {
-                            break;
-                        }
-                    }   
-                },"Dispatch Thread");
-        }
-        
         char input;
 
         std::cin >> input;

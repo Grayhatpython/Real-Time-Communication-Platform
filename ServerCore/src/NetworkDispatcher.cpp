@@ -13,6 +13,25 @@ namespace servercore
     
     EpollDispatcher::~EpollDispatcher() 
     {
+      
+    }
+
+    bool EpollDispatcher::Initialize()
+    {
+        _epollFd = ::epoll_create1(0);
+        if(_epollFd == INVALID_EPOLL_FD_VALUE)
+            return false;
+
+        if(RegisterShutdownFd() == false || RegisterRemoveSessionFd() == false)
+            return false;
+
+        _epollEvents.resize(S_DEFALUT_EPOLL_EVENT_SIZE);
+
+        return true;
+    }
+
+    void EpollDispatcher::Stop()
+    {
         if(_coreEvents.shutdownFd != INVALID_EVENT_FD_VALUE)
         {
             ::close(_coreEvents.shutdownFd);
@@ -32,20 +51,6 @@ namespace servercore
         }
     }
 
-    bool EpollDispatcher::Initialize()
-    {
-        _epollFd = ::epoll_create1(0);
-        if(_epollFd == INVALID_EPOLL_FD_VALUE)
-            return false;
-
-        if(RegisterShutdownFd() == false || RegisterRemoveSessionFd() == false)
-            return false;
-
-        _epollEvents.resize(S_DEFALUT_EPOLL_EVENT_SIZE);
-
-        return true;
-    }
-    
     bool EpollDispatcher::RegisterShutdownFd()
     {
         _coreEvents.shutdownFd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
@@ -119,7 +124,7 @@ namespace servercore
 
                     return DispatchResult::ExitRequested;
                 }
-
+                
                 if(_epollEvents[i].data.fd == _coreEvents.removeSessionFd)
                 {
                     //  TODO

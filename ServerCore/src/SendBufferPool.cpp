@@ -13,27 +13,41 @@ namespace servercore
     {
         std::lock_guard<std::mutex> lock(_lock);
         for (auto i = 0; i < poolSize; i++)
-            _pool.push(std::shared_ptr<SendBuffer>(new SendBuffer(), Push));
+            _pool.push(new SendBuffer());
     }
 
     std::shared_ptr<SendBuffer> SendBufferPool::Pop()
     {
+        SendBuffer* sendBuffer = nullptr;
+
         {
             std::lock_guard<std::mutex> lock(_lock);
             if (_pool.empty() == false)
             {
-                auto sendBuffer = _pool.front();
+                sendBuffer = _pool.front();
                 _pool.pop();
-                sendBuffer->Reset();
-                return sendBuffer;
             }
         }
 
-        return std::shared_ptr<SendBuffer>(new SendBuffer(), Push);
+        if (sendBuffer == nullptr)
+            sendBuffer = new SendBuffer();
+
+        // 여기서 “항상” 동일한 deleter 부착
+        return std::shared_ptr<SendBuffer>(sendBuffer, &SendBufferPool::ReturnSendBufferToPool);
+    }
+
+    void SendBufferPool::Push(SendBuffer* sendBuffer)
+    {
+        sendBuffer->Reset();
+        
+        std::lock_guard<std::mutex> lock(_lock);
+        {
+            _pool.push(sendBuffer);
+        }
     }
 
     //  TEMP
-    void SendBufferPool::Push(SendBuffer* sendBuffer)
+    void SendBufferPool::ReturnSendBufferToPool(SendBuffer* sendBuffer)
     {
         if(S_SendBufferDeleterRelease == false)
             SendBufferArena::GetSendBufferPool()->Push(sendBuffer);

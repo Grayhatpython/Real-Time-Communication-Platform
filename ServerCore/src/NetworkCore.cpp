@@ -6,6 +6,7 @@
 #include "SessionManager.hpp"
 #include "NetworkDispatcher.hpp"
 
+
 namespace servercore
 {
     INetworkCore::INetworkCore(std::function<std::shared_ptr<Session>()> sessionFactory)
@@ -20,25 +21,52 @@ namespace servercore
 
     void INetworkCore::Stop()
     {
-        GSessionManager->Clear();
+        //  스레드 종료 시그널 -> 스레드 작업 마무리
+        GThreadManager->Stop();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
+        _isRunning.store(false, std::memory_order_release);
+    
+        // shutdown 시그널 -> epoll 이벤트 작업 종료
         auto epollDispatcher = std::static_pointer_cast<EpollDispatcher>(_networkDispatcher);
         epollDispatcher->PostCoreShutdown();
 
+        //  Network Dispatch Thread 종료            
+        if(_dispatchThread.joinable() == true)
+            _dispatchThread.join();
+
+        // 연결된 Session Socket Close 및 epoll 등록 해제
+        GSessionManager->Clear();
+
+        // core Event에 사용된 eventfd 및 epollfd 삭제
+        epollDispatcher->Stop();
+
+        // 할당된 메모리 정리 ( 메모리풀 )
         GlobalContext::GetInstance().Clear();
     }
 
-    DispatchResult INetworkCore::NetworkDispatch(uint32 timeoutMs)
-    {
-        if(_networkDispatcher)
-        {
-            auto dispatchReuslt =  _networkDispatcher->Dispatch(timeoutMs);
-            return dispatchReuslt;
-        }
+    void INetworkCore::NetworkDispatch()
+    { 
+        _dispatchThread = std::move(std::thread([=](){
 
-        return DispatchResult::InvalidDispatcher;
+            ThreadManager::InitializeThreadLocal();
+
+            while (_isRunning.load(std::memory_order_acquire) == true)
+            {
+                auto dispatchResult = _networkDispatcher->Dispatch();
+
+                //  TODO
+                if(dispatchResult == servercore::DispatchResult::InvalidDispatcher || 
+                    dispatchResult == servercore::DispatchResult::ExitRequested)
+                {
+                    
+                }         
+            }
+
+            ThreadManager::DestroyThreadLocal();
+
+			std::cout << "Network Dispatch" << " thread [" << LThreadId << "] finished." << std::endl;
+
+        }));
     }
 
     void INetworkCore::Initialize(std::function<std::shared_ptr<Session>()> sessionFactory)
@@ -85,7 +113,9 @@ namespace servercore
         
         _port = port;
         _isRunning.store(true, std::memory_order_release);
-            
+    
+        NetworkDispatch();
+
         return true;
     }
 
@@ -146,6 +176,9 @@ namespace servercore
         }
 
         _isRunning.store(true, std::memory_order_release);
+
+        NetworkDispatch();
+
         return true;
     }
 
