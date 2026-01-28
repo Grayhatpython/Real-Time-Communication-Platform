@@ -43,8 +43,8 @@ Windows IOCP 모델과 Linux epoll 모델의 차이를 비교·이해하고,
 - [ v ]epoll 기반 이벤트 루프 구조
 - [ v ]non-blocking socket 처리
 - [ v ]이벤트 디스패처 구조
-- 송신 처리 및 I/O 전용 스레드 분리 (검토 중)
-- 세션/버퍼 풀 연계 최적화
+- [ v ]송수신 처리
+- 로그 전용 스레드 및 I/O 전용 스레드 ( epoll Dispatcher ) 분리 
 - 부하 테스트 및 병목 분석
 - 패킷 직렬화 및 패킷 핸들러
 
@@ -72,6 +72,3 @@ cmake --build build
 ./build/Server/Server
 ./build/DummyClient/DummyClient
 ./build/MonitoringServer/MonitoringServer
-
-
--- 현재는 네트워크 코드 작성을 하고 있는 중이라 실행되지 않음 ;;
