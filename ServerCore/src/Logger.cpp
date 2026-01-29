@@ -22,6 +22,7 @@ namespace servercore
         // %v  : message
         //
         // NOTE: %s/%#/%! 가 의미 있으려면 Log() 호출 시 source_loc가 전달되어야 함 (우린 매크로로 전달)
+
         logger->set_pattern(
             "%Y-%m-%d %H:%M:%S.%e "
             "[%^%l%$] "
@@ -29,6 +30,7 @@ namespace servercore
             "[%s:%# %!] "
             "%v"
         );
+
     }
 
     void Logger::Initialize(const std::string& loggerName,spdlog::level::level_enum level,size_t queueSize,spdlog::level::level_enum flushLevel)
@@ -61,7 +63,7 @@ namespace servercore
         spdlog::set_default_logger(asyncLogger);
         GetInstance() = std::move(asyncLogger);
 
-        SPDLOG_INFO("Logger initialized. name= {} ", loggerName);
+        SPDLOG_INFO("Logger initialized");
     }
 
     void Logger::Shutdown()

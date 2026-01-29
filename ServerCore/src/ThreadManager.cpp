@@ -153,7 +153,7 @@ namespace servercore
 	{
 		_taskQueue = std::make_shared<TaskQueue>();
 
-		InitializeThreadLocal();
+		InitializeThreadLocal("Main");
 
 		if (threadCount > 0)
 			InitializeThreadPool();
@@ -173,7 +173,9 @@ namespace servercore
 
 		_threads.push_back(std::thread([this, callback, threadName, repeated]() {
 			
-			InitializeThreadLocal();
+			InitializeThreadLocal(threadName);
+
+            NC_LOG_INFO("Thread Started");
 
 			if(repeated == true)
 			{
@@ -185,7 +187,7 @@ namespace servercore
 
 			DestroyThreadLocal();
 
-			std::cout << threadName << " thread [" << LThreadId << "] finished." << std::endl;
+			NC_LOG_INFO("Thread finished");
 		}));
 	}
 
@@ -197,16 +199,25 @@ namespace servercore
 				thread.join();
 		}
 		_threads.clear();
+
+		NC_LOG_INFO("Threads Join finished");
 	}
 
 	void ThreadManager::Stop()
 	{
+		NC_LOG_INFO("ThreadManager Stopping");
+
 		_stopped.store(true, std::memory_order_release);
 
 		Join();
 
 		//	Thread Pool은 아직...
 		ShutdownThreadPool();
+
+		//	Main Thread
+		DestroyThreadLocal();
+
+		NC_LOG_INFO("ThreadManager Stopped");
 	}
 
 	void ThreadManager::InitializeThreadPool(int32 threadCount)
@@ -248,24 +259,50 @@ namespace servercore
 		return task;
 	}
 
-	void ThreadManager::InitializeThreadLocal()
+	void ThreadManager::InitializeThreadLocal(const std::string& name)
 	{
+		SetCurrentThreadName(name);
+
 		static std::atomic<uint32> S_autoIncreaseThreadId = 1;
 		LThreadId = S_autoIncreaseThreadId.fetch_add(1);
+
+		NC_LOG_INFO("Initialize Thread Local");
 	}
 
 	void ThreadManager::DestroyThreadLocal()
 	{
 		//	각 Thread별로 TLS 영역에 할당된 SendBuffer 정리 
 		SendBufferArena::ThreadSendBufferClear();
+		NC_LOG_INFO("Thread Send Buffer Clear");
 
 		//	MemoryPool에서 각 Thread별로 TLS 영역에 할당된 freeList Memory 정리
 		GMemoryPool->ThreadLocalCacheClear();
+		NC_LOG_INFO("Thread Local Cache Clear");
+
+		NC_LOG_INFO("Destroy Thread Local");
 	}
 
-	void ThreadManager::WorkerThread()
+    void ThreadManager::SetCurrentThreadName(const std::string &name)
+  	{
+		LThreadName = name;
+    	::pthread_setname_np(pthread_self(), name.c_str());
+	}
+
+    std::string ThreadManager::GetCurrentThreadName()
+    {
+		char name[16];
+		if (pthread_getname_np(pthread_self(), name, sizeof(name)) == 0) 
+		{
+			return std::string(name);
+		}
+		return "Unknown";
+    }
+
+    void ThreadManager::WorkerThread()
 	{
-		InitializeThreadLocal();
+		InitializeThreadLocal("WortherThread");
+
+		NC_LOG_INFO("ThreadPool Started");
 
 		while (_poolRunning.load(std::memory_order_acquire) == true)
 		{
@@ -276,6 +313,6 @@ namespace servercore
 
 		DestroyThreadLocal();
 
-		std::cout << "Thread Pool thread [" << LThreadId << "] finished." << std::endl;
+		NC_LOG_INFO("ThreadPool finished");
 	}
 }

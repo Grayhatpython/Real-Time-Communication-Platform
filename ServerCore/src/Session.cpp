@@ -228,6 +228,7 @@ namespace servercore
 		//	Server Client Contents 
 		OnConnected();
 
+        NC_LOG_INFO("{} Session is Connected", _sessionId);
 	}
 
 	//	Client Connect() -> ProcessConnect
@@ -265,7 +266,10 @@ namespace servercore
 		}
 
 		_state.store(SessionState::Connected, std::memory_order_release);
+
 		OnConnected();
+
+		NC_LOG_INFO("Connected to the {} session(server)", _sessionId);
 	}
 
 	void Session::ProcessDisconnect(DisconnectEvent* disconnectEvent)
@@ -288,6 +292,8 @@ namespace servercore
 				epollDispatcher->PostRemoveSessionEvent(_sessionId);
 			}
 		}
+
+		NC_LOG_INFO("{} session Disconnected", _sessionId);
 	}
 
 	void Session::ProcessRecv(RecvEvent* recvEvent)

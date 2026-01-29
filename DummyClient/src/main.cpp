@@ -84,7 +84,7 @@ class ServerSession : public servercore::Session
 public:
     virtual void OnConnected() override
     {
-        std::cout << "Server to Connected" << std::endl;
+        
     }
 
     virtual void OnDisconnected() override

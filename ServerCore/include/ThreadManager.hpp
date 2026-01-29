@@ -65,6 +65,7 @@ namespace servercore
 	using Event = Task;
 	using EventQueue = TaskQueue;
 
+
 	class ThreadManager
 	{
 	public:
@@ -84,8 +85,11 @@ namespace servercore
 		std::shared_ptr<Task> PushTask(std::function<void(void)> func, const std::string& name);
 
 	public:
-		static void InitializeThreadLocal();
+		static void InitializeThreadLocal(const std::string& name);
 		static void DestroyThreadLocal();
+
+		static void 		SetCurrentThreadName(const std::string& name);
+		static std::string 	GetCurrentThreadName();
 
 	private:
 		void WorkerThread();

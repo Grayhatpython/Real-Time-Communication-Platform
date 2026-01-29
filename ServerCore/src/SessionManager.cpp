@@ -24,14 +24,15 @@ namespace servercore
 
 		if (sessions.empty() == false)
 		{
-			std::cout << sessions.size() << " Active sessions to disconnect..." << std::endl;
+            NC_LOG_INFO("{} Active sessions to disconnect", sessions.size());
+
 			for (const auto& session : sessions)
 			{
 				if (session)
 					session->Disconnect();
 			}
 
-			std::cout << "All sessions have completed disconnect..." << std::endl;
+            NC_LOG_INFO("All sessions have completed disconnected");
 		}	
 
         sessions.clear();

@@ -97,10 +97,12 @@ namespace servercore
 		//	Main Thread TLS Cache 정리
 		SendBufferArena::ThreadSendBufferClear();
 		ThreadLocalCacheClear();
+		NC_LOG_INFO("Main Thread TLS Cache Clear");
 
 		//	Global Shared Memory 정리
 		SendBufferArena::SendBufferPoolClear();
 		GlobalFreeListClear();
+		NC_LOG_INFO("Global Shared Memory Clear");
 	}
 
 	void* MemoryPool::Allocate(size_t size)

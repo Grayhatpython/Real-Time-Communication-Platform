@@ -14,14 +14,14 @@ namespace servercore
 
 	bool GlobalContext::Initialize()
 	{
+		Logger::Initialize("Core Logger");
+
 		_memoryPool = new MemoryPool();
 		_threadManager = new ThreadManager();
 		_sessionManager = new SessionManager();
 
 		if(_memoryPool == nullptr || _threadManager == nullptr || _sessionManager == nullptr )
 			return false;
-
-		Logger::Initialize("Core Logger");
 
 		return true;
 	}

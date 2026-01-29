@@ -49,6 +49,8 @@ namespace servercore
             ::close(_epollFd);
             _epollFd = INVALID_EPOLL_FD_VALUE;
         }
+
+        NC_LOG_INFO("Epoll Dispatcher Stopped");
     }
 
     bool EpollDispatcher::RegisterShutdownFd()

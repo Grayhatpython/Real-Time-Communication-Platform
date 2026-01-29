@@ -51,7 +51,9 @@ namespace servercore
     { 
         _dispatchThread = std::move(std::thread([=](){
 
-            ThreadManager::InitializeThreadLocal();
+            ThreadManager::InitializeThreadLocal("NetworkDispatch");
+
+            NC_LOG_INFO("Thread Started");
 
             while (_isRunning.load(std::memory_order_acquire) == true)
             {
@@ -67,7 +69,7 @@ namespace servercore
 
             ThreadManager::DestroyThreadLocal();
 
-			std::cout << "Network Dispatch" << " thread [" << LThreadId << "] finished." << std::endl;
+            NC_LOG_INFO("Thread finished");
 
         }));
     }
@@ -87,6 +89,8 @@ namespace servercore
                 epollDispatcher->Initialize();
             }
         }
+
+        NC_LOG_INFO("Network Core Initialized");
     }
 
     Server::Server(std::function<std::shared_ptr<Session>()> sessionFactory)
@@ -117,8 +121,9 @@ namespace servercore
         _port = port;
         _isRunning.store(true, std::memory_order_release);
     
-        NetworkDispatch();
+        NC_LOG_INFO("Server port:{} Started", _port);
 
+        NetworkDispatch();
         return true;
     }
 
@@ -127,12 +132,14 @@ namespace servercore
         if(_isRunning.load(std::memory_order_acquire) == false)
             return;
         
-        std::cout << "Server Stopping..." << std::endl;
+        NC_LOG_INFO("Server Stopping");
 
         if(_acceptor)
             _acceptor->Stop();
 
         INetworkCore::Stop();
+
+        NC_LOG_INFO("Server Stopped");
     }
     
     Client::Client(std::function<std::shared_ptr<Session>()> sessionFactory)
@@ -148,6 +155,8 @@ namespace servercore
 
     bool Client::Connect(NetworkAddress& targetAddress, int32 connectionCount)
     {
+        NC_LOG_INFO("Client target Address:{} port:{} Connecting", targetAddress.GetIpStringAddress(), targetAddress.GetPort());
+
         std::vector<uint64> connectedSessions;  
 
         for (int i = 0; i < connectionCount; ++i)
@@ -190,9 +199,11 @@ namespace servercore
         if(_isRunning.load(std::memory_order_acquire) == false)
             return;
 
-        std::cout << "Client Stopping..." << std::endl;
+        NC_LOG_INFO("Client Stopping");
 
         INetworkCore::Stop();
+
+        NC_LOG_INFO("Server Stopped");
     }
     
 }

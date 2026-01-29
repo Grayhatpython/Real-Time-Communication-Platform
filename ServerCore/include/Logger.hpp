@@ -2,6 +2,7 @@
 
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/fmt.h>
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 
 namespace servercore
 {
@@ -14,23 +15,23 @@ namespace servercore
         static std::shared_ptr<spdlog::logger>& GetInstance();
 
         template<typename... Args>
-        static void Log(const spdlog::source_loc& loc, spdlog::level::level_enum level, fmt::format_string<Args...> fmtStr, Args&&... args)
+        static void Log(const spdlog::source_loc& loc, spdlog::level::level_enum level, const std::string& threadName, fmt::format_string<Args...> fmtStr, Args&&... args)
         {
             auto logger = GetInstance();
             if(logger == nullptr)
                 return;
 
-            logger->log(loc, level, fmtStr, std::forward<Args>(args)...);
+            logger->log(loc, level, "[{}] {}", threadName, fmt::format(fmtStr, std::forward<Args>(args)...));
         }
 
     private:
-        static void                             SetPattern(const std::shared_ptr<spdlog::logger>& logger);
+        static void       SetPattern(const std::shared_ptr<spdlog::logger>& logger);
     };
 }
 
-#define NC_LOG_TRACE(...)    servercore::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::trace,    __VA_ARGS__)
-#define NC_LOG_DEBUG(...)    servercore::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::debug,    __VA_ARGS__)
-#define NC_LOG_INFO(...)     servercore::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::info,     __VA_ARGS__)
-#define NC_LOG_WARN(...)     servercore::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::warn,     __VA_ARGS__)
-#define NC_LOG_ERROR(...)    servercore::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::err,      __VA_ARGS__)
-#define NC_LOG_CRITICAL(...) servercore::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::critical, __VA_ARGS__)
+#define NC_LOG_TRACE(...)    servercore::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::trace,     servercore::LThreadName , __VA_ARGS__)
+#define NC_LOG_DEBUG(...)    servercore::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::debug,     servercore::LThreadName , __VA_ARGS__)
+#define NC_LOG_INFO(...)     servercore::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::info,      servercore::LThreadName , __VA_ARGS__)
+#define NC_LOG_WARN(...)     servercore::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::warn,      servercore::LThreadName , __VA_ARGS__)
+#define NC_LOG_ERROR(...)    servercore::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::err,       servercore::LThreadName , __VA_ARGS__)
+#define NC_LOG_CRITICAL(...) servercore::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::critical,  servercore::LThreadName , __VA_ARGS__)
