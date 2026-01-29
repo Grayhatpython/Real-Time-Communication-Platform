@@ -52,7 +52,7 @@
 #include "ThreadManager.hpp"
 #include "Lock.hpp"
 #include "SendBufferPool.hpp"
-
+#include "Logger.hpp"
 
 //  TEMP
 #pragma pack(push, 1)

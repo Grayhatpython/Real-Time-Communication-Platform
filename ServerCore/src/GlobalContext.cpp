@@ -21,6 +21,8 @@ namespace servercore
 		if(_memoryPool == nullptr || _threadManager == nullptr || _sessionManager == nullptr )
 			return false;
 
+		Logger::Initialize("Core Logger");
+
 		return true;
 	}
 

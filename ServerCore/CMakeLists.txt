@@ -53,6 +53,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(spdlog)
 
 # 헤더온리로 사용
-target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog_header_only)
+target_link_libraries(${LIB_NAME} PUBLIC spdlog::spdlog_header_only)
 
 # target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog)

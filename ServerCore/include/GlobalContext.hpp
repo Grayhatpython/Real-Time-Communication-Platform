@@ -35,9 +35,9 @@ namespace servercore
 		ThreadManager* 		_threadManager = nullptr;
 		SessionManager* 	_sessionManager= nullptr;
 	};
-
-#define GMemoryPool		GlobalContext::GetInstance().GetMemoryPool()
-#define GThreadManager	GlobalContext::GetInstance().GetThreadPool()
-#define GSessionManager	GlobalContext::GetInstance().GetSessionManager()
 }
+
+#define GMemoryPool		servercore::GlobalContext::GetInstance().GetMemoryPool()
+#define GThreadManager	servercore::GlobalContext::GetInstance().GetThreadPool()
+#define GSessionManager	servercore::GlobalContext::GetInstance().GetSessionManager()
 

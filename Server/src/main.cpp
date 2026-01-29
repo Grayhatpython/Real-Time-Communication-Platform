@@ -40,6 +40,10 @@ private:
 
 int main()
 {
+    //  TEMP
+    servercore::Logger::Initialize("Core Logger");
+    NC_LOG_INFO("test");
+    
     {
         //  SessionFactory 
         std::function<std::shared_ptr<ClientSession>(void)> sessionFactory = []() {

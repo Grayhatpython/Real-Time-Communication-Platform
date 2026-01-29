@@ -36,7 +36,7 @@ public:
             const size_t rangeEnd = rangeStart + rangeSize;
             currentIndex = rangeEnd;
 
-            servercore::GThreadManager->Launch([&serverSesions, rangeStart, rangeEnd]() {
+            GThreadManager->Launch([&serverSesions, rangeStart, rangeEnd]() {
   
                         for (auto j = rangeStart; j < rangeEnd; j++)
                         {

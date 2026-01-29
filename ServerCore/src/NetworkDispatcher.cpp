@@ -147,9 +147,7 @@ namespace servercore
                 //  Error Event
                 if((events & (EPOLLERR | EPOLLHUP)) != 0)
                 {
-  
                     ErrorEvent errorEvent;
-
                     networkObject->Dispatch(&errorEvent);
                 }
 
