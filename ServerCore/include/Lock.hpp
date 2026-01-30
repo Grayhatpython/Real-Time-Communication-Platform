@@ -1,13 +1,10 @@
 #pragma once		
 
-#if defined(PLATFORM_WINDOWS)
-#define PAUSE() YieldProcessor()
-#elif defined(__x86_64__) || defined(_M_X64) || defined(__i386) || defined(_M_IX86)
-#define PAUSE() __asm__ __volatile__ ("pause")
-#elif defined(__arm__) || defined(__aarch64__) || defined(_M_ARM64)
-#define PAUSE() __asm__ __volatile__("yield")
+#if defined(__x86_64__) || defined(__i386__)
+  #include <immintrin.h>
+  inline void PAUSE() { _mm_pause(); }
 #else
-#define PAUSE() std::this_thread::yield()
+  inline void PAUSE() {  }
 #endif
 
 namespace servercore
@@ -29,9 +26,14 @@ namespace servercore
 		void WriteUnLock();
 
 	private:
-		pthread_rwlock_t _lock;
-		std::atomic<uint32> _ownerThreadId = 0;
-		std::atomic<uint32> _nestedCount = 0;
+	    // owner thread id (0=free)
+		alignas(64) std::atomic<uint32> _ownerThreadId{EMPTY_OWNER_THREAD_ID};
+
+		// 재진입 횟수 (owner만 수정)
+		std::atomic<uint32> _recursion{0};
+
+		// 경쟁 완화용 mutex
+		pthread_mutex_t _mutex{};
 	};
 
 	class WriteLockGuard

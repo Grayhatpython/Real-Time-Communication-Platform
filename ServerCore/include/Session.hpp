@@ -4,8 +4,35 @@
 #include "NetworkEvent.hpp"
 #include "SendBuffer.hpp"
 
+constexpr size_t CACHE_LINE_SIZE = 64;
+
 namespace servercore
 {
+    struct SessionIdentity
+    {
+        SocketFd                    socketFd = INVALID_SOCKET_FD_VALUE;
+        uint64                      sessionId = 0;
+        std::atomic<SessionState>   state = SessionState::Disconnected;
+    };
+
+    alignas(64) struct SessionSendFlags
+    {
+        std::atomic<bool>   isSending{false};
+        std::atomic<uint32> sendRegisterCount{0};
+    };
+
+    struct SessionIOBuffer
+    {
+        Lock                                        lock;
+        std::queue<std::shared_ptr<SendContext>>    sendQueue;
+        StreamBuffer                                streamBuffer;
+    };
+
+    struct SessionEnv
+    {
+        NetworkAddress                          remoteAddress;
+        std::shared_ptr<INetworkDispatcher>     dispatcher;
+    };
 
     class Session : public EpollObject
     {
@@ -69,19 +96,17 @@ namespace servercore
     private:
     	static std::atomic<uint64> S_GenerateSessionId;
 
-        SocketFd    _socketFd = INVALID_SOCKET_FD_VALUE;
-        uint64      _sessionId = 0;
-
+        SocketFd                                    _socketFd = INVALID_SOCKET_FD_VALUE;
         NetworkAddress                              _remoteAddress{};
         std::shared_ptr<INetworkDispatcher>         _networkDispatcher;
-
+        uint64                                      _sessionId = 0;
         std::atomic<SessionState>                   _state = SessionState::Disconnected;
 
-        std::queue<std::shared_ptr<SendContext>>	_sendContextQueue;
-        Lock										_lock;
-        std::atomic<bool>							_isSending = false;
+        alignas(64) std::atomic<bool>				_isSending = false;
         std::atomic<uint32>							_sendRegisterCount = 0;
 
+        Lock										_lock;
+        std::queue<std::shared_ptr<SendContext>>	_sendContextQueue;
         StreamBuffer								_streamBuffer{};
     };
 

@@ -108,7 +108,7 @@ namespace servercore
 		}
 
 		bool expected = false;
-		if(_isSending.compare_exchange_strong(expected, true, std::memory_order_acq_rel) == true)
+		if(_isSending.compare_exchange_strong(expected, true, std::memory_order_acquire, std::memory_order_relaxed) == true)
 		{
 			FlushSend();
 			return true;
@@ -125,12 +125,8 @@ namespace servercore
 		{
 			WriteLockGuard lock(_lock);
 			
-			while(_sendContextQueue.empty() == false)
-			{
-				auto sendContext = _sendContextQueue.front();
-				sendContexts.push(sendContext);
-				_sendContextQueue.pop();
-			}
+			sendContexts.swap(_sendContextQueue);
+			
 		}
 
 		while(sendContexts.empty() == false)
@@ -390,7 +386,7 @@ namespace servercore
 			;
 
 		bool expected = false;
-		if(_isSending.compare_exchange_strong(expected, true, std::memory_order_acq_rel) == true)
+		if(_isSending.compare_exchange_strong(expected, true, std::memory_order_acquire, std::memory_order_relaxed) == true)
 		{
 			FlushSend();
 		}
