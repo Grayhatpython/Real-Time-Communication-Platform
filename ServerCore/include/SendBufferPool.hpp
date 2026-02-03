@@ -17,6 +17,7 @@ namespace servercore
     public:
         static void ReturnSendBufferToPool(SendBuffer* sendBuffer);
         static void ReleaseSendBufferDeleter();
+        void        PoolClear();
 
     private:
         std::queue<SendBuffer*>                     _pool;

@@ -53,6 +53,8 @@ namespace servercore
 		std::vector<void*> memoryBlocks;
 		GMemoryPool->AllocateFromMemoryPool(dataSize, refillCount, memoryBlocks);
 
+		NC_LOG_DEBUG("RefillBlockCache");
+
 		for (auto i = 0; i < memoryBlocks.size(); i++)
 		{
 			void* memory = memoryBlocks[i];
@@ -211,6 +213,8 @@ namespace servercore
 
 	void MemoryPool::DeallocateToMemoryPool(void* memory)
 	{
+		NC_LOG_DEBUG("DeallocateToMemoryPool");
+
 		//	문제있음 -> S_MAX_CACHE_BLOCK_SIZE 보다 많이 ThreadLocalCache에 있는 상황에서
 		//	메모리 하나하나 반환할때마다 반환하는 메모리 크기에 해당하는 인덱스 GlobalFreeList 락을 잡음
 		//	즉, 다른 스레드에서 같은 GlobalFreeList 인덱스에 접근시 경쟁이 굉장히 심해짐 

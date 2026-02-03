@@ -362,11 +362,14 @@ namespace servercore
 				break;
 
 			//	헤더를 읽어서 전체 패킷 크기 확인
-			PacketHeader* packetHeader = reinterpret_cast<PacketHeader*>(&buffer[processLen]);
-			const uint16 packetSize = packetHeader->size;
+			BinaryReader br(buffer, sizeof(PacketHeader));
+			uint16 packetSize = 0;
+			br.Read<uint16>(packetSize);
 
-			//	확인한 패킷 크기가 패킷 헤더보다 작다면
-			if (packetSize < sizeof(PacketHeader))
+			// PacketHeader* packetHeader = reinterpret_cast<PacketHeader*>(&buffer[processLen]);
+
+			//	확인한 패킷 크기가 패킷 사이즈보다 작다면
+			if (readableSize < packetSize)
 			{
 				break;
 			}

@@ -39,12 +39,12 @@ namespace servercore
 
         // core Event에 사용된 eventfd 및 epollfd 삭제
         epollDispatcher->Stop();
-
-        //  async_logger 처리 및 스레드 작업 마무리
-        Logger::Shutdown();
-
+     
         // 할당된 메모리 정리 ( 메모리풀 )
         GlobalContext::GetInstance().Clear();
+        
+        //  async_logger 처리 및 스레드 작업 마무리
+        Logger::Shutdown();
     }
 
     void INetworkCore::NetworkDispatch()
@@ -203,7 +203,7 @@ namespace servercore
 
         INetworkCore::Stop();
 
-        NC_LOG_INFO("Server Stopped");
+        NC_LOG_INFO("Client Stopped");
     }
     
 }

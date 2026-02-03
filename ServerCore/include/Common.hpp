@@ -1,5 +1,19 @@
 #pragma once
 
+#define STREAM_ENDIANNESS 1 // big - Write
+
+#if defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_BIG_ENDIAN__)
+    #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+        #define PLATFORM_ENDIANNESS 0   //  little
+    #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+        #define PLATFORM_ENDIANNESS 1   //  big
+    #else
+        #error "Unknown platform endianness"
+    #endif
+#else
+    #error "Endianness macros not available"
+#endif
+
 #include <pthread.h>
 
 // Linux/Unix 소켓 프로그래밍에 필요한 표준 헤더 파일들입니다.
@@ -54,6 +68,10 @@
 #include "SendBufferPool.hpp"
 #include "Logger.hpp"
 
+#include "ByteSwap.hpp"
+#include "BinaryWriter.hpp"
+#include "BinaryReader.hpp"
+
 //  TEMP
 #pragma pack(push, 1)
 struct PacketHeader
@@ -62,3 +80,4 @@ struct PacketHeader
     uint16 id;
 };
 #pragma pack(pop)
+

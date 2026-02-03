@@ -27,7 +27,7 @@ namespace servercore
 
 	private:
 	    // owner thread id (0=free)
-		alignas(64) std::atomic<uint32> _ownerThreadId{EMPTY_OWNER_THREAD_ID};
+		alignas(CACHE_LINE_SIZE) std::atomic<uint32> _ownerThreadId{EMPTY_OWNER_THREAD_ID};
 
 		// 재진입 횟수 (owner만 수정)
 		std::atomic<uint32> _recursion{0};

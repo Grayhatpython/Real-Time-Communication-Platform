@@ -2,11 +2,31 @@
 #include "Session.hpp"
 #include "NetworkCore.hpp"
 
+enum class PacketId : uint16_t
+{
+    Stat = 200,
+};
+
 #pragma pack(push, 1)
-struct TestPacket : PacketHeader
+struct StatPacket : PacketHeader
 {
     uint64 playerId;
-    uint64 playerMp;
+    uint32 playerHp;
+    uint32 playerMp;
+
+    bool Serialize(servercore::BinaryWriter& bw) const
+    {
+        return bw.Write<uint64>(playerId)
+            && bw.Write<uint32>(playerHp)
+            && bw.Write<uint32>(playerMp);
+    }
+
+    bool DeSerialize(servercore::BinaryReader& br)
+    {
+        return br.Read(playerId)
+            && br.Read(playerHp)
+            && br.Read(playerMp);
+    }
 };
 #pragma pack(pop)
 
@@ -25,8 +45,13 @@ public:
 
     virtual void OnRecv(BYTE* buffer, int32 numOfBytes) override
     {
-        TestPacket* testPacket = reinterpret_cast<TestPacket*>(buffer);
-        std::cout << testPacket->playerId << " " << testPacket->playerMp << " " << testPacket->size << " " << std::endl;
+        servercore::BinaryReader br(buffer, numOfBytes);
+        br.MoveReadPos(sizeof(PacketHeader));
+
+        StatPacket statPacket;
+        statPacket.DeSerialize(br);
+
+        std::cout << statPacket.playerId << " " << statPacket.playerMp << " " << std::endl;
     }
 
     virtual void OnSend() override
@@ -41,6 +66,7 @@ private:
 int main()
 {
     {
+ 
         //  SessionFactory 
         std::function<std::shared_ptr<ClientSession>(void)> sessionFactory = []() {
             return servercore::MakeShared<ClientSession>();

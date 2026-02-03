@@ -1,0 +1,1275 @@
+desc: (none)
+cmd: ./build/Server/Server
+time_unit: i
+#-----------
+snapshot=0
+#-----------
+time=0
+mem_heap_B=0
+mem_heap_extra_B=0
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=1
+#-----------
+time=2180421
+mem_heap_B=73728
+mem_heap_extra_B=8
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=2
+#-----------
+time=2183796
+mem_heap_B=140008
+mem_heap_extra_B=56
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=3
+#-----------
+time=2249967
+mem_heap_B=140040
+mem_heap_extra_B=64
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=4
+#-----------
+time=2250601
+mem_heap_B=205576
+mem_heap_extra_B=72
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=5
+#-----------
+time=2316772
+mem_heap_B=205608
+mem_heap_extra_B=80
+mem_stacks_B=0
+heap_tree=detailed
+n3: 205608 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 131072 0x1A09AE: std::__new_allocator<unsigned char>::allocate(unsigned long, void const*) (new_allocator.h:151)
+  n1: 131072 0x1A08C6: allocate (alloc_traits.h:482)
+   n1: 131072 0x1A08C6: std::_Vector_base<unsigned char, std::allocator<unsigned char> >::_M_allocate(unsigned long) (stl_vector.h:381)
+    n1: 131072 0x1A7E25: std::vector<unsigned char, std::allocator<unsigned char> >::_M_default_append(unsigned long) (vector.tcc:663)
+     n1: 131072 0x1A7CEA: std::vector<unsigned char, std::allocator<unsigned char> >::resize(unsigned long) (stl_vector.h:1016)
+      n1: 131072 0x1A7B57: servercore::SendBuffer::SendBuffer(int) (SendBuffer.cpp:8)
+       n1: 131072 0x192ED0: servercore::SendBufferPool::SendBufferPool(int) (SendBufferPool.cpp:16)
+        n1: 131072 0x196671: void std::_Construct<servercore::SendBufferPool>(servercore::SendBufferPool*) (stl_construct.h:119)
+         n1: 131072 0x195A6A: construct<servercore::SendBufferPool> (alloc_traits.h:661)
+          n1: 131072 0x195A6A: std::_Sp_counted_ptr_inplace<servercore::SendBufferPool, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>::_Sp_counted_ptr_inplace<>(std::allocator<void>) (shared_ptr_base.h:604)
+           n1: 131072 0x195130: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::__shared_count<servercore::SendBufferPool, std::allocator<void>>(servercore::SendBufferPool*&, std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr_base.h:971)
+            n1: 131072 0x194695: std::__shared_ptr<servercore::SendBufferPool, (__gnu_cxx::_Lock_policy)2>::__shared_ptr<std::allocator<void>>(std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr_base.h:1712)
+             n1: 131072 0x193F54: std::shared_ptr<servercore::SendBufferPool>::shared_ptr<std::allocator<void>>(std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr.h:464)
+              n1: 131072 0x193A75: std::shared_ptr<std::enable_if<!std::is_array<servercore::SendBufferPool>::value, servercore::SendBufferPool>::type> std::make_shared<servercore::SendBufferPool>() (shared_ptr.h:1010)
+               n1: 131072 0x19365C: __static_initialization_and_destruction_0() (SendBufferPool.cpp:10)
+                n1: 131072 0x193716: _GLOBAL__sub_I__ZN10servercore14SendBufferPool26S_SendBufferDeleterReleaseE (SendBufferPool.cpp:122)
+                 n1: 131072 0x4B38303: call_init (libc-start.c:145)
+                  n1: 131072 0x4B38303: __libc_start_main@@GLIBC_2.34 (libc-start.c:347)
+                   n0: 131072 0x1192A4: (below main) (in /home/cisco/Project/server/build/Server/Server)
+ n1: 73728 0x491938E: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+  n1: 73728 0x400571E: call_init.part.0 (dl-init.c:74)
+   n1: 73728 0x4005823: call_init (dl-init.c:120)
+    n1: 73728 0x4005823: _dl_init (dl-init.c:121)
+     n0: 73728 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n0: 808 in 4 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=6
+#-----------
+time=2317406
+mem_heap_B=271144
+mem_heap_extra_B=88
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=7
+#-----------
+time=2383577
+mem_heap_B=271176
+mem_heap_extra_B=96
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=8
+#-----------
+time=2384211
+mem_heap_B=336712
+mem_heap_extra_B=104
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=9
+#-----------
+time=2450382
+mem_heap_B=336744
+mem_heap_extra_B=112
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=10
+#-----------
+time=2451016
+mem_heap_B=402280
+mem_heap_extra_B=120
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=11
+#-----------
+time=2517187
+mem_heap_B=402312
+mem_heap_extra_B=128
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=12
+#-----------
+time=2517821
+mem_heap_B=467848
+mem_heap_extra_B=136
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=13
+#-----------
+time=2583992
+mem_heap_B=467880
+mem_heap_extra_B=144
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=14
+#-----------
+time=2584626
+mem_heap_B=533416
+mem_heap_extra_B=152
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=15
+#-----------
+time=2650797
+mem_heap_B=533448
+mem_heap_extra_B=160
+mem_stacks_B=0
+heap_tree=detailed
+n3: 533448 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 458752 0x1A09AE: std::__new_allocator<unsigned char>::allocate(unsigned long, void const*) (new_allocator.h:151)
+  n1: 458752 0x1A08C6: allocate (alloc_traits.h:482)
+   n1: 458752 0x1A08C6: std::_Vector_base<unsigned char, std::allocator<unsigned char> >::_M_allocate(unsigned long) (stl_vector.h:381)
+    n1: 458752 0x1A7E25: std::vector<unsigned char, std::allocator<unsigned char> >::_M_default_append(unsigned long) (vector.tcc:663)
+     n1: 458752 0x1A7CEA: std::vector<unsigned char, std::allocator<unsigned char> >::resize(unsigned long) (stl_vector.h:1016)
+      n1: 458752 0x1A7B57: servercore::SendBuffer::SendBuffer(int) (SendBuffer.cpp:8)
+       n1: 458752 0x192ED0: servercore::SendBufferPool::SendBufferPool(int) (SendBufferPool.cpp:16)
+        n1: 458752 0x196671: void std::_Construct<servercore::SendBufferPool>(servercore::SendBufferPool*) (stl_construct.h:119)
+         n1: 458752 0x195A6A: construct<servercore::SendBufferPool> (alloc_traits.h:661)
+          n1: 458752 0x195A6A: std::_Sp_counted_ptr_inplace<servercore::SendBufferPool, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>::_Sp_counted_ptr_inplace<>(std::allocator<void>) (shared_ptr_base.h:604)
+           n1: 458752 0x195130: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::__shared_count<servercore::SendBufferPool, std::allocator<void>>(servercore::SendBufferPool*&, std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr_base.h:971)
+            n1: 458752 0x194695: std::__shared_ptr<servercore::SendBufferPool, (__gnu_cxx::_Lock_policy)2>::__shared_ptr<std::allocator<void>>(std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr_base.h:1712)
+             n1: 458752 0x193F54: std::shared_ptr<servercore::SendBufferPool>::shared_ptr<std::allocator<void>>(std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr.h:464)
+              n1: 458752 0x193A75: std::shared_ptr<std::enable_if<!std::is_array<servercore::SendBufferPool>::value, servercore::SendBufferPool>::type> std::make_shared<servercore::SendBufferPool>() (shared_ptr.h:1010)
+               n1: 458752 0x19365C: __static_initialization_and_destruction_0() (SendBufferPool.cpp:10)
+                n1: 458752 0x193716: _GLOBAL__sub_I__ZN10servercore14SendBufferPool26S_SendBufferDeleterReleaseE (SendBufferPool.cpp:122)
+                 n1: 458752 0x4B38303: call_init (libc-start.c:145)
+                  n1: 458752 0x4B38303: __libc_start_main@@GLIBC_2.34 (libc-start.c:347)
+                   n0: 458752 0x1192A4: (below main) (in /home/cisco/Project/server/build/Server/Server)
+ n1: 73728 0x491938E: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+  n1: 73728 0x400571E: call_init.part.0 (dl-init.c:74)
+   n1: 73728 0x4005823: call_init (dl-init.c:120)
+    n1: 73728 0x4005823: _dl_init (dl-init.c:121)
+     n0: 73728 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n0: 968 in 4 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=16
+#-----------
+time=2651431
+mem_heap_B=598984
+mem_heap_extra_B=168
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=17
+#-----------
+time=2717602
+mem_heap_B=599016
+mem_heap_extra_B=176
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=18
+#-----------
+time=2718236
+mem_heap_B=664552
+mem_heap_extra_B=184
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=19
+#-----------
+time=2784407
+mem_heap_B=664584
+mem_heap_extra_B=192
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=20
+#-----------
+time=2785041
+mem_heap_B=730120
+mem_heap_extra_B=200
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=21
+#-----------
+time=2851949
+mem_heap_B=730336
+mem_heap_extra_B=216
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=22
+#-----------
+time=2867619
+mem_heap_B=732528
+mem_heap_extra_B=336
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=23
+#-----------
+time=2875102
+mem_heap_B=4075696
+mem_heap_extra_B=392
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=24
+#-----------
+time=5522648
+mem_heap_B=4075704
+mem_heap_extra_B=408
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=25
+#-----------
+time=5524630
+mem_heap_B=4076104
+mem_heap_extra_B=424
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=26
+#-----------
+time=5541409
+mem_heap_B=4076824
+mem_heap_extra_B=432
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=27
+#-----------
+time=5548572
+mem_heap_B=4077416
+mem_heap_extra_B=480
+mem_stacks_B=0
+heap_tree=detailed
+n4: 4077416 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 3342744 0x18684C: std::__new_allocator<spdlog::details::async_msg>::allocate(unsigned long, void const*) (new_allocator.h:151)
+  n1: 3342744 0x18551E: allocate (alloc_traits.h:482)
+   n1: 3342744 0x18551E: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_M_allocate(unsigned long) (stl_vector.h:381)
+    n1: 3342744 0x18458A: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_M_create_storage(unsigned long) (stl_vector.h:398)
+     n1: 3342744 0x183052: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_Vector_base(unsigned long, std::allocator<spdlog::details::async_msg> const&) (stl_vector.h:335)
+      n1: 3342744 0x1812AA: std::vector<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::vector(unsigned long, std::allocator<spdlog::details::async_msg> const&) (stl_vector.h:557)
+       n1: 3342744 0x17F754: spdlog::details::circular_q<spdlog::details::async_msg>::circular_q(unsigned long) (circular_q.h:31)
+        n1: 3342744 0x17DAE8: spdlog::details::mpmc_blocking_queue<spdlog::details::async_msg>::mpmc_blocking_queue(unsigned long) (mpmc_blocking_q.h:27)
+         n1: 3342744 0x17A850: spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>) (thread_pool-inl.h:20)
+          n1: 3342744 0x186345: void std::_Construct<spdlog::details::thread_pool, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(spdlog::details::thread_pool*, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (stl_construct.h:119)
+           n1: 3342744 0x184E29: construct<spdlog::details::thread_pool, long unsigned int&, long unsigned int&, std::function<void()>&, std::function<void()>&> (alloc_traits.h:661)
+            n1: 3342744 0x184E29: std::_Sp_counted_ptr_inplace<spdlog::details::thread_pool, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>::_Sp_counted_ptr_inplace<unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:604)
+             n1: 3342744 0x1836E9: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::__shared_count<spdlog::details::thread_pool, std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(spdlog::details::thread_pool*&, std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:971)
+              n1: 3342744 0x181915: std::__shared_ptr<spdlog::details::thread_pool, (__gnu_cxx::_Lock_policy)2>::__shared_ptr<std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:1712)
+               n1: 3342744 0x180336: std::shared_ptr<spdlog::details::thread_pool>::shared_ptr<std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr.h:464)
+                n1: 3342744 0x17E720: std::shared_ptr<std::enable_if<!std::is_array<spdlog::details::thread_pool>::value, spdlog::details::thread_pool>::type> std::make_shared<spdlog::details::thread_pool, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr.h:1010)
+                 n1: 3342744 0x17C8BB: spdlog::init_thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>) (async.h:81)
+                  n1: 3342744 0x17C9EC: spdlog::init_thread_pool(unsigned long, unsigned long) (async.h:92)
+                   n1: 3342744 0x177E35: servercore::Logger::Initialize(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, spdlog::level::level_enum, unsigned long, spdlog::level::level_enum) (Logger.cpp:41)
+                    n1: 3342744 0x174E88: servercore::GlobalContext::Initialize() (GlobalContext.cpp:17)
+                     n1: 3342744 0x18C4D7: servercore::INetworkCore::Initialize(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:80)
+                      n1: 3342744 0x18BF84: servercore::INetworkCore::INetworkCore(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:14)
+                       n1: 3342744 0x18C6BF: servercore::Server::Server(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:97)
+                        n1: 3342744 0x12B258: std::__detail::_MakeUniq<servercore::Server>::__single_object std::make_unique<servercore::Server, std::function<std::shared_ptr<ClientSession> ()>&>(std::function<std::shared_ptr<ClientSession> ()>&) (unique_ptr.h:1070)
+                         n0: 3342744 0x119454: main (main.cpp:49)
+ n1: 655360 0x1A09AE: std::__new_allocator<unsigned char>::allocate(unsigned long, void const*) (new_allocator.h:151)
+  n1: 655360 0x1A08C6: allocate (alloc_traits.h:482)
+   n1: 655360 0x1A08C6: std::_Vector_base<unsigned char, std::allocator<unsigned char> >::_M_allocate(unsigned long) (stl_vector.h:381)
+    n1: 655360 0x1A7E25: std::vector<unsigned char, std::allocator<unsigned char> >::_M_default_append(unsigned long) (vector.tcc:663)
+     n1: 655360 0x1A7CEA: std::vector<unsigned char, std::allocator<unsigned char> >::resize(unsigned long) (stl_vector.h:1016)
+      n1: 655360 0x1A7B57: servercore::SendBuffer::SendBuffer(int) (SendBuffer.cpp:8)
+       n1: 655360 0x192ED0: servercore::SendBufferPool::SendBufferPool(int) (SendBufferPool.cpp:16)
+        n1: 655360 0x196671: void std::_Construct<servercore::SendBufferPool>(servercore::SendBufferPool*) (stl_construct.h:119)
+         n1: 655360 0x195A6A: construct<servercore::SendBufferPool> (alloc_traits.h:661)
+          n1: 655360 0x195A6A: std::_Sp_counted_ptr_inplace<servercore::SendBufferPool, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>::_Sp_counted_ptr_inplace<>(std::allocator<void>) (shared_ptr_base.h:604)
+           n1: 655360 0x195130: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::__shared_count<servercore::SendBufferPool, std::allocator<void>>(servercore::SendBufferPool*&, std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr_base.h:971)
+            n1: 655360 0x194695: std::__shared_ptr<servercore::SendBufferPool, (__gnu_cxx::_Lock_policy)2>::__shared_ptr<std::allocator<void>>(std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr_base.h:1712)
+             n1: 655360 0x193F54: std::shared_ptr<servercore::SendBufferPool>::shared_ptr<std::allocator<void>>(std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr.h:464)
+              n1: 655360 0x193A75: std::shared_ptr<std::enable_if<!std::is_array<servercore::SendBufferPool>::value, servercore::SendBufferPool>::type> std::make_shared<servercore::SendBufferPool>() (shared_ptr.h:1010)
+               n1: 655360 0x19365C: __static_initialization_and_destruction_0() (SendBufferPool.cpp:10)
+                n1: 655360 0x193716: _GLOBAL__sub_I__ZN10servercore14SendBufferPool26S_SendBufferDeleterReleaseE (SendBufferPool.cpp:122)
+                 n1: 655360 0x4B38303: call_init (libc-start.c:145)
+                  n1: 655360 0x4B38303: __libc_start_main@@GLIBC_2.34 (libc-start.c:347)
+                   n0: 655360 0x1192A4: (below main) (in /home/cisco/Project/server/build/Server/Server)
+ n1: 73728 0x491938E: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+  n1: 73728 0x400571E: call_init.part.0 (dl-init.c:74)
+   n1: 73728 0x4005823: call_init (dl-init.c:120)
+    n1: 73728 0x4005823: _dl_init (dl-init.c:121)
+     n0: 73728 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n0: 5584 in 20 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=28
+#-----------
+time=5561113
+mem_heap_B=4078077
+mem_heap_extra_B=587
+mem_stacks_B=0
+heap_tree=peak
+n4: 4078077 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 3342744 0x18684C: std::__new_allocator<spdlog::details::async_msg>::allocate(unsigned long, void const*) (new_allocator.h:151)
+  n1: 3342744 0x18551E: allocate (alloc_traits.h:482)
+   n1: 3342744 0x18551E: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_M_allocate(unsigned long) (stl_vector.h:381)
+    n1: 3342744 0x18458A: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_M_create_storage(unsigned long) (stl_vector.h:398)
+     n1: 3342744 0x183052: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_Vector_base(unsigned long, std::allocator<spdlog::details::async_msg> const&) (stl_vector.h:335)
+      n1: 3342744 0x1812AA: std::vector<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::vector(unsigned long, std::allocator<spdlog::details::async_msg> const&) (stl_vector.h:557)
+       n1: 3342744 0x17F754: spdlog::details::circular_q<spdlog::details::async_msg>::circular_q(unsigned long) (circular_q.h:31)
+        n1: 3342744 0x17DAE8: spdlog::details::mpmc_blocking_queue<spdlog::details::async_msg>::mpmc_blocking_queue(unsigned long) (mpmc_blocking_q.h:27)
+         n1: 3342744 0x17A850: spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>) (thread_pool-inl.h:20)
+          n1: 3342744 0x186345: void std::_Construct<spdlog::details::thread_pool, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(spdlog::details::thread_pool*, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (stl_construct.h:119)
+           n1: 3342744 0x184E29: construct<spdlog::details::thread_pool, long unsigned int&, long unsigned int&, std::function<void()>&, std::function<void()>&> (alloc_traits.h:661)
+            n1: 3342744 0x184E29: std::_Sp_counted_ptr_inplace<spdlog::details::thread_pool, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>::_Sp_counted_ptr_inplace<unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:604)
+             n1: 3342744 0x1836E9: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::__shared_count<spdlog::details::thread_pool, std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(spdlog::details::thread_pool*&, std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:971)
+              n1: 3342744 0x181915: std::__shared_ptr<spdlog::details::thread_pool, (__gnu_cxx::_Lock_policy)2>::__shared_ptr<std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:1712)
+               n1: 3342744 0x180336: std::shared_ptr<spdlog::details::thread_pool>::shared_ptr<std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr.h:464)
+                n1: 3342744 0x17E720: std::shared_ptr<std::enable_if<!std::is_array<spdlog::details::thread_pool>::value, spdlog::details::thread_pool>::type> std::make_shared<spdlog::details::thread_pool, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr.h:1010)
+                 n1: 3342744 0x17C8BB: spdlog::init_thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>) (async.h:81)
+                  n1: 3342744 0x17C9EC: spdlog::init_thread_pool(unsigned long, unsigned long) (async.h:92)
+                   n1: 3342744 0x177E35: servercore::Logger::Initialize(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, spdlog::level::level_enum, unsigned long, spdlog::level::level_enum) (Logger.cpp:41)
+                    n1: 3342744 0x174E88: servercore::GlobalContext::Initialize() (GlobalContext.cpp:17)
+                     n1: 3342744 0x18C4D7: servercore::INetworkCore::Initialize(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:80)
+                      n1: 3342744 0x18BF84: servercore::INetworkCore::INetworkCore(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:14)
+                       n1: 3342744 0x18C6BF: servercore::Server::Server(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:97)
+                        n1: 3342744 0x12B258: std::__detail::_MakeUniq<servercore::Server>::__single_object std::make_unique<servercore::Server, std::function<std::shared_ptr<ClientSession> ()>&>(std::function<std::shared_ptr<ClientSession> ()>&) (unique_ptr.h:1070)
+                         n0: 3342744 0x119454: main (main.cpp:49)
+ n1: 655360 0x1A09AE: std::__new_allocator<unsigned char>::allocate(unsigned long, void const*) (new_allocator.h:151)
+  n1: 655360 0x1A08C6: allocate (alloc_traits.h:482)
+   n1: 655360 0x1A08C6: std::_Vector_base<unsigned char, std::allocator<unsigned char> >::_M_allocate(unsigned long) (stl_vector.h:381)
+    n1: 655360 0x1A7E25: std::vector<unsigned char, std::allocator<unsigned char> >::_M_default_append(unsigned long) (vector.tcc:663)
+     n1: 655360 0x1A7CEA: std::vector<unsigned char, std::allocator<unsigned char> >::resize(unsigned long) (stl_vector.h:1016)
+      n1: 655360 0x1A7B57: servercore::SendBuffer::SendBuffer(int) (SendBuffer.cpp:8)
+       n1: 655360 0x192ED0: servercore::SendBufferPool::SendBufferPool(int) (SendBufferPool.cpp:16)
+        n1: 655360 0x196671: void std::_Construct<servercore::SendBufferPool>(servercore::SendBufferPool*) (stl_construct.h:119)
+         n1: 655360 0x195A6A: construct<servercore::SendBufferPool> (alloc_traits.h:661)
+          n1: 655360 0x195A6A: std::_Sp_counted_ptr_inplace<servercore::SendBufferPool, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>::_Sp_counted_ptr_inplace<>(std::allocator<void>) (shared_ptr_base.h:604)
+           n1: 655360 0x195130: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::__shared_count<servercore::SendBufferPool, std::allocator<void>>(servercore::SendBufferPool*&, std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr_base.h:971)
+            n1: 655360 0x194695: std::__shared_ptr<servercore::SendBufferPool, (__gnu_cxx::_Lock_policy)2>::__shared_ptr<std::allocator<void>>(std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr_base.h:1712)
+             n1: 655360 0x193F54: std::shared_ptr<servercore::SendBufferPool>::shared_ptr<std::allocator<void>>(std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr.h:464)
+              n1: 655360 0x193A75: std::shared_ptr<std::enable_if<!std::is_array<servercore::SendBufferPool>::value, servercore::SendBufferPool>::type> std::make_shared<servercore::SendBufferPool>() (shared_ptr.h:1010)
+               n1: 655360 0x19365C: __static_initialization_and_destruction_0() (SendBufferPool.cpp:10)
+                n1: 655360 0x193716: _GLOBAL__sub_I__ZN10servercore14SendBufferPool26S_SendBufferDeleterReleaseE (SendBufferPool.cpp:122)
+                 n1: 655360 0x4B38303: call_init (libc-start.c:145)
+                  n1: 655360 0x4B38303: __libc_start_main@@GLIBC_2.34 (libc-start.c:347)
+                   n0: 655360 0x1192A4: (below main) (in /home/cisco/Project/server/build/Server/Server)
+ n1: 73728 0x491938E: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+  n1: 73728 0x400571E: call_init.part.0 (dl-init.c:74)
+   n1: 73728 0x4005823: call_init (dl-init.c:120)
+    n1: 73728 0x4005823: _dl_init (dl-init.c:121)
+     n0: 73728 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n0: 6245 in 25 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=29
+#-----------
+time=5570801
+mem_heap_B=4078277
+mem_heap_extra_B=635
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=30
+#-----------
+time=5581467
+mem_heap_B=4078445
+mem_heap_extra_B=683
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=31
+#-----------
+time=5589564
+mem_heap_B=4078661
+mem_heap_extra_B=763
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=32
+#-----------
+time=5603266
+mem_heap_B=4078861
+mem_heap_extra_B=811
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=33
+#-----------
+time=5619913
+mem_heap_B=4079181
+mem_heap_extra_B=939
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=34
+#-----------
+time=5629318
+mem_heap_B=4078749
+mem_heap_extra_B=939
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=35
+#-----------
+time=5644529
+mem_heap_B=4081725
+mem_heap_extra_B=1003
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=36
+#-----------
+time=5656849
+mem_heap_B=4083438
+mem_heap_extra_B=1098
+mem_stacks_B=0
+heap_tree=detailed
+n4: 4083438 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 3342744 0x18684C: std::__new_allocator<spdlog::details::async_msg>::allocate(unsigned long, void const*) (new_allocator.h:151)
+  n1: 3342744 0x18551E: allocate (alloc_traits.h:482)
+   n1: 3342744 0x18551E: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_M_allocate(unsigned long) (stl_vector.h:381)
+    n1: 3342744 0x18458A: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_M_create_storage(unsigned long) (stl_vector.h:398)
+     n1: 3342744 0x183052: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_Vector_base(unsigned long, std::allocator<spdlog::details::async_msg> const&) (stl_vector.h:335)
+      n1: 3342744 0x1812AA: std::vector<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::vector(unsigned long, std::allocator<spdlog::details::async_msg> const&) (stl_vector.h:557)
+       n1: 3342744 0x17F754: spdlog::details::circular_q<spdlog::details::async_msg>::circular_q(unsigned long) (circular_q.h:31)
+        n1: 3342744 0x17DAE8: spdlog::details::mpmc_blocking_queue<spdlog::details::async_msg>::mpmc_blocking_queue(unsigned long) (mpmc_blocking_q.h:27)
+         n1: 3342744 0x17A850: spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>) (thread_pool-inl.h:20)
+          n1: 3342744 0x186345: void std::_Construct<spdlog::details::thread_pool, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(spdlog::details::thread_pool*, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (stl_construct.h:119)
+           n1: 3342744 0x184E29: construct<spdlog::details::thread_pool, long unsigned int&, long unsigned int&, std::function<void()>&, std::function<void()>&> (alloc_traits.h:661)
+            n1: 3342744 0x184E29: std::_Sp_counted_ptr_inplace<spdlog::details::thread_pool, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>::_Sp_counted_ptr_inplace<unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:604)
+             n1: 3342744 0x1836E9: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::__shared_count<spdlog::details::thread_pool, std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(spdlog::details::thread_pool*&, std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:971)
+              n1: 3342744 0x181915: std::__shared_ptr<spdlog::details::thread_pool, (__gnu_cxx::_Lock_policy)2>::__shared_ptr<std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:1712)
+               n1: 3342744 0x180336: std::shared_ptr<spdlog::details::thread_pool>::shared_ptr<std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr.h:464)
+                n1: 3342744 0x17E720: std::shared_ptr<std::enable_if<!std::is_array<spdlog::details::thread_pool>::value, spdlog::details::thread_pool>::type> std::make_shared<spdlog::details::thread_pool, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr.h:1010)
+                 n1: 3342744 0x17C8BB: spdlog::init_thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>) (async.h:81)
+                  n1: 3342744 0x17C9EC: spdlog::init_thread_pool(unsigned long, unsigned long) (async.h:92)
+                   n1: 3342744 0x177E35: servercore::Logger::Initialize(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, spdlog::level::level_enum, unsigned long, spdlog::level::level_enum) (Logger.cpp:41)
+                    n1: 3342744 0x174E88: servercore::GlobalContext::Initialize() (GlobalContext.cpp:17)
+                     n1: 3342744 0x18C4D7: servercore::INetworkCore::Initialize(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:80)
+                      n1: 3342744 0x18BF84: servercore::INetworkCore::INetworkCore(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:14)
+                       n1: 3342744 0x18C6BF: servercore::Server::Server(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:97)
+                        n1: 3342744 0x12B258: std::__detail::_MakeUniq<servercore::Server>::__single_object std::make_unique<servercore::Server, std::function<std::shared_ptr<ClientSession> ()>&>(std::function<std::shared_ptr<ClientSession> ()>&) (unique_ptr.h:1070)
+                         n0: 3342744 0x119454: main (main.cpp:49)
+ n1: 655360 0x1A09AE: std::__new_allocator<unsigned char>::allocate(unsigned long, void const*) (new_allocator.h:151)
+  n1: 655360 0x1A08C6: allocate (alloc_traits.h:482)
+   n1: 655360 0x1A08C6: std::_Vector_base<unsigned char, std::allocator<unsigned char> >::_M_allocate(unsigned long) (stl_vector.h:381)
+    n1: 655360 0x1A7E25: std::vector<unsigned char, std::allocator<unsigned char> >::_M_default_append(unsigned long) (vector.tcc:663)
+     n1: 655360 0x1A7CEA: std::vector<unsigned char, std::allocator<unsigned char> >::resize(unsigned long) (stl_vector.h:1016)
+      n1: 655360 0x1A7B57: servercore::SendBuffer::SendBuffer(int) (SendBuffer.cpp:8)
+       n1: 655360 0x192ED0: servercore::SendBufferPool::SendBufferPool(int) (SendBufferPool.cpp:16)
+        n1: 655360 0x196671: void std::_Construct<servercore::SendBufferPool>(servercore::SendBufferPool*) (stl_construct.h:119)
+         n1: 655360 0x195A6A: construct<servercore::SendBufferPool> (alloc_traits.h:661)
+          n1: 655360 0x195A6A: std::_Sp_counted_ptr_inplace<servercore::SendBufferPool, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>::_Sp_counted_ptr_inplace<>(std::allocator<void>) (shared_ptr_base.h:604)
+           n1: 655360 0x195130: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::__shared_count<servercore::SendBufferPool, std::allocator<void>>(servercore::SendBufferPool*&, std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr_base.h:971)
+            n1: 655360 0x194695: std::__shared_ptr<servercore::SendBufferPool, (__gnu_cxx::_Lock_policy)2>::__shared_ptr<std::allocator<void>>(std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr_base.h:1712)
+             n1: 655360 0x193F54: std::shared_ptr<servercore::SendBufferPool>::shared_ptr<std::allocator<void>>(std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr.h:464)
+              n1: 655360 0x193A75: std::shared_ptr<std::enable_if<!std::is_array<servercore::SendBufferPool>::value, servercore::SendBufferPool>::type> std::make_shared<servercore::SendBufferPool>() (shared_ptr.h:1010)
+               n1: 655360 0x19365C: __static_initialization_and_destruction_0() (SendBufferPool.cpp:10)
+                n1: 655360 0x193716: _GLOBAL__sub_I__ZN10servercore14SendBufferPool26S_SendBufferDeleterReleaseE (SendBufferPool.cpp:122)
+                 n1: 655360 0x4B38303: call_init (libc-start.c:145)
+                  n1: 655360 0x4B38303: __libc_start_main@@GLIBC_2.34 (libc-start.c:347)
+                   n0: 655360 0x1192A4: (below main) (in /home/cisco/Project/server/build/Server/Server)
+ n1: 73728 0x491938E: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+  n1: 73728 0x400571E: call_init.part.0 (dl-init.c:74)
+   n1: 73728 0x4005823: call_init (dl-init.c:120)
+    n1: 73728 0x4005823: _dl_init (dl-init.c:121)
+     n0: 73728 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n0: 11606 in 50 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=37
+#-----------
+time=5672118
+mem_heap_B=4083717
+mem_heap_extra_B=1083
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=38
+#-----------
+time=5691501
+mem_heap_B=4084741
+mem_heap_extra_B=1091
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=39
+#-----------
+time=5699496
+mem_heap_B=4084773
+mem_heap_extra_B=1099
+mem_stacks_B=0
+heap_tree=detailed
+n4: 4084773 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 3342744 0x18684C: std::__new_allocator<spdlog::details::async_msg>::allocate(unsigned long, void const*) (new_allocator.h:151)
+  n1: 3342744 0x18551E: allocate (alloc_traits.h:482)
+   n1: 3342744 0x18551E: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_M_allocate(unsigned long) (stl_vector.h:381)
+    n1: 3342744 0x18458A: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_M_create_storage(unsigned long) (stl_vector.h:398)
+     n1: 3342744 0x183052: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_Vector_base(unsigned long, std::allocator<spdlog::details::async_msg> const&) (stl_vector.h:335)
+      n1: 3342744 0x1812AA: std::vector<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::vector(unsigned long, std::allocator<spdlog::details::async_msg> const&) (stl_vector.h:557)
+       n1: 3342744 0x17F754: spdlog::details::circular_q<spdlog::details::async_msg>::circular_q(unsigned long) (circular_q.h:31)
+        n1: 3342744 0x17DAE8: spdlog::details::mpmc_blocking_queue<spdlog::details::async_msg>::mpmc_blocking_queue(unsigned long) (mpmc_blocking_q.h:27)
+         n1: 3342744 0x17A850: spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>) (thread_pool-inl.h:20)
+          n1: 3342744 0x186345: void std::_Construct<spdlog::details::thread_pool, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(spdlog::details::thread_pool*, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (stl_construct.h:119)
+           n1: 3342744 0x184E29: construct<spdlog::details::thread_pool, long unsigned int&, long unsigned int&, std::function<void()>&, std::function<void()>&> (alloc_traits.h:661)
+            n1: 3342744 0x184E29: std::_Sp_counted_ptr_inplace<spdlog::details::thread_pool, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>::_Sp_counted_ptr_inplace<unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:604)
+             n1: 3342744 0x1836E9: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::__shared_count<spdlog::details::thread_pool, std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(spdlog::details::thread_pool*&, std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:971)
+              n1: 3342744 0x181915: std::__shared_ptr<spdlog::details::thread_pool, (__gnu_cxx::_Lock_policy)2>::__shared_ptr<std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:1712)
+               n1: 3342744 0x180336: std::shared_ptr<spdlog::details::thread_pool>::shared_ptr<std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr.h:464)
+                n1: 3342744 0x17E720: std::shared_ptr<std::enable_if<!std::is_array<spdlog::details::thread_pool>::value, spdlog::details::thread_pool>::type> std::make_shared<spdlog::details::thread_pool, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr.h:1010)
+                 n1: 3342744 0x17C8BB: spdlog::init_thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>) (async.h:81)
+                  n1: 3342744 0x17C9EC: spdlog::init_thread_pool(unsigned long, unsigned long) (async.h:92)
+                   n1: 3342744 0x177E35: servercore::Logger::Initialize(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, spdlog::level::level_enum, unsigned long, spdlog::level::level_enum) (Logger.cpp:41)
+                    n1: 3342744 0x174E88: servercore::GlobalContext::Initialize() (GlobalContext.cpp:17)
+                     n1: 3342744 0x18C4D7: servercore::INetworkCore::Initialize(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:80)
+                      n1: 3342744 0x18BF84: servercore::INetworkCore::INetworkCore(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:14)
+                       n1: 3342744 0x18C6BF: servercore::Server::Server(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:97)
+                        n1: 3342744 0x12B258: std::__detail::_MakeUniq<servercore::Server>::__single_object std::make_unique<servercore::Server, std::function<std::shared_ptr<ClientSession> ()>&>(std::function<std::shared_ptr<ClientSession> ()>&) (unique_ptr.h:1070)
+                         n0: 3342744 0x119454: main (main.cpp:49)
+ n1: 655360 0x1A09AE: std::__new_allocator<unsigned char>::allocate(unsigned long, void const*) (new_allocator.h:151)
+  n1: 655360 0x1A08C6: allocate (alloc_traits.h:482)
+   n1: 655360 0x1A08C6: std::_Vector_base<unsigned char, std::allocator<unsigned char> >::_M_allocate(unsigned long) (stl_vector.h:381)
+    n1: 655360 0x1A7E25: std::vector<unsigned char, std::allocator<unsigned char> >::_M_default_append(unsigned long) (vector.tcc:663)
+     n1: 655360 0x1A7CEA: std::vector<unsigned char, std::allocator<unsigned char> >::resize(unsigned long) (stl_vector.h:1016)
+      n1: 655360 0x1A7B57: servercore::SendBuffer::SendBuffer(int) (SendBuffer.cpp:8)
+       n1: 655360 0x192ED0: servercore::SendBufferPool::SendBufferPool(int) (SendBufferPool.cpp:16)
+        n1: 655360 0x196671: void std::_Construct<servercore::SendBufferPool>(servercore::SendBufferPool*) (stl_construct.h:119)
+         n1: 655360 0x195A6A: construct<servercore::SendBufferPool> (alloc_traits.h:661)
+          n1: 655360 0x195A6A: std::_Sp_counted_ptr_inplace<servercore::SendBufferPool, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>::_Sp_counted_ptr_inplace<>(std::allocator<void>) (shared_ptr_base.h:604)
+           n1: 655360 0x195130: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::__shared_count<servercore::SendBufferPool, std::allocator<void>>(servercore::SendBufferPool*&, std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr_base.h:971)
+            n1: 655360 0x194695: std::__shared_ptr<servercore::SendBufferPool, (__gnu_cxx::_Lock_policy)2>::__shared_ptr<std::allocator<void>>(std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr_base.h:1712)
+             n1: 655360 0x193F54: std::shared_ptr<servercore::SendBufferPool>::shared_ptr<std::allocator<void>>(std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr.h:464)
+              n1: 655360 0x193A75: std::shared_ptr<std::enable_if<!std::is_array<servercore::SendBufferPool>::value, servercore::SendBufferPool>::type> std::make_shared<servercore::SendBufferPool>() (shared_ptr.h:1010)
+               n1: 655360 0x19365C: __static_initialization_and_destruction_0() (SendBufferPool.cpp:10)
+                n1: 655360 0x193716: _GLOBAL__sub_I__ZN10servercore14SendBufferPool26S_SendBufferDeleterReleaseE (SendBufferPool.cpp:122)
+                 n1: 655360 0x4B38303: call_init (libc-start.c:145)
+                  n1: 655360 0x4B38303: __libc_start_main@@GLIBC_2.34 (libc-start.c:347)
+                   n0: 655360 0x1192A4: (below main) (in /home/cisco/Project/server/build/Server/Server)
+ n1: 73728 0x491938E: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+  n1: 73728 0x400571E: call_init.part.0 (dl-init.c:74)
+   n1: 73728 0x4005823: call_init (dl-init.c:120)
+    n1: 73728 0x4005823: _dl_init (dl-init.c:121)
+     n0: 73728 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n0: 12941 in 53 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=40
+#-----------
+time=5714485
+mem_heap_B=4085207
+mem_heap_extra_B=1209
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=41
+#-----------
+time=5727258
+mem_heap_B=4086231
+mem_heap_extra_B=1217
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=42
+#-----------
+time=5810833
+mem_heap_B=4086254
+mem_heap_extra_B=1234
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=43
+#-----------
+time=5825175
+mem_heap_B=4086288
+mem_heap_extra_B=1240
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=44
+#-----------
+time=5833031
+mem_heap_B=4086320
+mem_heap_extra_B=1248
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=45
+#-----------
+time=5850108
+mem_heap_B=4086295
+mem_heap_extra_B=1233
+mem_stacks_B=0
+heap_tree=detailed
+n4: 4086295 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 3342744 0x18684C: std::__new_allocator<spdlog::details::async_msg>::allocate(unsigned long, void const*) (new_allocator.h:151)
+  n1: 3342744 0x18551E: allocate (alloc_traits.h:482)
+   n1: 3342744 0x18551E: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_M_allocate(unsigned long) (stl_vector.h:381)
+    n1: 3342744 0x18458A: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_M_create_storage(unsigned long) (stl_vector.h:398)
+     n1: 3342744 0x183052: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_Vector_base(unsigned long, std::allocator<spdlog::details::async_msg> const&) (stl_vector.h:335)
+      n1: 3342744 0x1812AA: std::vector<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::vector(unsigned long, std::allocator<spdlog::details::async_msg> const&) (stl_vector.h:557)
+       n1: 3342744 0x17F754: spdlog::details::circular_q<spdlog::details::async_msg>::circular_q(unsigned long) (circular_q.h:31)
+        n1: 3342744 0x17DAE8: spdlog::details::mpmc_blocking_queue<spdlog::details::async_msg>::mpmc_blocking_queue(unsigned long) (mpmc_blocking_q.h:27)
+         n1: 3342744 0x17A850: spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>) (thread_pool-inl.h:20)
+          n1: 3342744 0x186345: void std::_Construct<spdlog::details::thread_pool, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(spdlog::details::thread_pool*, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (stl_construct.h:119)
+           n1: 3342744 0x184E29: construct<spdlog::details::thread_pool, long unsigned int&, long unsigned int&, std::function<void()>&, std::function<void()>&> (alloc_traits.h:661)
+            n1: 3342744 0x184E29: std::_Sp_counted_ptr_inplace<spdlog::details::thread_pool, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>::_Sp_counted_ptr_inplace<unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:604)
+             n1: 3342744 0x1836E9: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::__shared_count<spdlog::details::thread_pool, std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(spdlog::details::thread_pool*&, std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:971)
+              n1: 3342744 0x181915: std::__shared_ptr<spdlog::details::thread_pool, (__gnu_cxx::_Lock_policy)2>::__shared_ptr<std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:1712)
+               n1: 3342744 0x180336: std::shared_ptr<spdlog::details::thread_pool>::shared_ptr<std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr.h:464)
+                n1: 3342744 0x17E720: std::shared_ptr<std::enable_if<!std::is_array<spdlog::details::thread_pool>::value, spdlog::details::thread_pool>::type> std::make_shared<spdlog::details::thread_pool, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr.h:1010)
+                 n1: 3342744 0x17C8BB: spdlog::init_thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>) (async.h:81)
+                  n1: 3342744 0x17C9EC: spdlog::init_thread_pool(unsigned long, unsigned long) (async.h:92)
+                   n1: 3342744 0x177E35: servercore::Logger::Initialize(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, spdlog::level::level_enum, unsigned long, spdlog::level::level_enum) (Logger.cpp:41)
+                    n1: 3342744 0x174E88: servercore::GlobalContext::Initialize() (GlobalContext.cpp:17)
+                     n1: 3342744 0x18C4D7: servercore::INetworkCore::Initialize(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:80)
+                      n1: 3342744 0x18BF84: servercore::INetworkCore::INetworkCore(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:14)
+                       n1: 3342744 0x18C6BF: servercore::Server::Server(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:97)
+                        n1: 3342744 0x12B258: std::__detail::_MakeUniq<servercore::Server>::__single_object std::make_unique<servercore::Server, std::function<std::shared_ptr<ClientSession> ()>&>(std::function<std::shared_ptr<ClientSession> ()>&) (unique_ptr.h:1070)
+                         n0: 3342744 0x119454: main (main.cpp:49)
+ n1: 655360 0x1A09AE: std::__new_allocator<unsigned char>::allocate(unsigned long, void const*) (new_allocator.h:151)
+  n1: 655360 0x1A08C6: allocate (alloc_traits.h:482)
+   n1: 655360 0x1A08C6: std::_Vector_base<unsigned char, std::allocator<unsigned char> >::_M_allocate(unsigned long) (stl_vector.h:381)
+    n1: 655360 0x1A7E25: std::vector<unsigned char, std::allocator<unsigned char> >::_M_default_append(unsigned long) (vector.tcc:663)
+     n1: 655360 0x1A7CEA: std::vector<unsigned char, std::allocator<unsigned char> >::resize(unsigned long) (stl_vector.h:1016)
+      n1: 655360 0x1A7B57: servercore::SendBuffer::SendBuffer(int) (SendBuffer.cpp:8)
+       n1: 655360 0x192ED0: servercore::SendBufferPool::SendBufferPool(int) (SendBufferPool.cpp:16)
+        n1: 655360 0x196671: void std::_Construct<servercore::SendBufferPool>(servercore::SendBufferPool*) (stl_construct.h:119)
+         n1: 655360 0x195A6A: construct<servercore::SendBufferPool> (alloc_traits.h:661)
+          n1: 655360 0x195A6A: std::_Sp_counted_ptr_inplace<servercore::SendBufferPool, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>::_Sp_counted_ptr_inplace<>(std::allocator<void>) (shared_ptr_base.h:604)
+           n1: 655360 0x195130: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::__shared_count<servercore::SendBufferPool, std::allocator<void>>(servercore::SendBufferPool*&, std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr_base.h:971)
+            n1: 655360 0x194695: std::__shared_ptr<servercore::SendBufferPool, (__gnu_cxx::_Lock_policy)2>::__shared_ptr<std::allocator<void>>(std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr_base.h:1712)
+             n1: 655360 0x193F54: std::shared_ptr<servercore::SendBufferPool>::shared_ptr<std::allocator<void>>(std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr.h:464)
+              n1: 655360 0x193A75: std::shared_ptr<std::enable_if<!std::is_array<servercore::SendBufferPool>::value, servercore::SendBufferPool>::type> std::make_shared<servercore::SendBufferPool>() (shared_ptr.h:1010)
+               n1: 655360 0x19365C: __static_initialization_and_destruction_0() (SendBufferPool.cpp:10)
+                n1: 655360 0x193716: _GLOBAL__sub_I__ZN10servercore14SendBufferPool26S_SendBufferDeleterReleaseE (SendBufferPool.cpp:122)
+                 n1: 655360 0x4B38303: call_init (libc-start.c:145)
+                  n1: 655360 0x4B38303: __libc_start_main@@GLIBC_2.34 (libc-start.c:347)
+                   n0: 655360 0x1192A4: (below main) (in /home/cisco/Project/server/build/Server/Server)
+ n1: 73728 0x491938E: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+  n1: 73728 0x400571E: call_init.part.0 (dl-init.c:74)
+   n1: 73728 0x4005823: call_init (dl-init.c:120)
+    n1: 73728 0x4005823: _dl_init (dl-init.c:121)
+     n0: 73728 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n0: 14463 in 58 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=46
+#-----------
+time=5951309
+mem_heap_B=4086327
+mem_heap_extra_B=1241
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=47
+#-----------
+time=5966018
+mem_heap_B=4086359
+mem_heap_extra_B=1249
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=48
+#-----------
+time=5978400
+mem_heap_B=4086343
+mem_heap_extra_B=1241
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=49
+#-----------
+time=5986208
+mem_heap_B=4086247
+mem_heap_extra_B=1217
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=50
+#-----------
+time=5986886
+mem_heap_B=4085703
+mem_heap_extra_B=1201
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=51
+#-----------
+time=5989078
+mem_heap_B=4084871
+mem_heap_extra_B=1129
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=52
+#-----------
+time=5989807
+mem_heap_B=4084495
+mem_heap_extra_B=1097
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=53
+#-----------
+time=5992072
+mem_heap_B=4084523
+mem_heap_extra_B=1109
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=54
+#-----------
+time=5997105
+mem_heap_B=4084495
+mem_heap_extra_B=1097
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=55
+#-----------
+time=5997766
+mem_heap_B=4018927
+mem_heap_extra_B=1081
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=56
+#-----------
+time=5998558
+mem_heap_B=3887823
+mem_heap_extra_B=1057
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=57
+#-----------
+time=5999440
+mem_heap_B=3756687
+mem_heap_extra_B=1025
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=58
+#-----------
+time=6000322
+mem_heap_B=3625551
+mem_heap_extra_B=993
+mem_stacks_B=0
+heap_tree=detailed
+n4: 3625551 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 3342744 0x18684C: std::__new_allocator<spdlog::details::async_msg>::allocate(unsigned long, void const*) (new_allocator.h:151)
+  n1: 3342744 0x18551E: allocate (alloc_traits.h:482)
+   n1: 3342744 0x18551E: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_M_allocate(unsigned long) (stl_vector.h:381)
+    n1: 3342744 0x18458A: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_M_create_storage(unsigned long) (stl_vector.h:398)
+     n1: 3342744 0x183052: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_Vector_base(unsigned long, std::allocator<spdlog::details::async_msg> const&) (stl_vector.h:335)
+      n1: 3342744 0x1812AA: std::vector<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::vector(unsigned long, std::allocator<spdlog::details::async_msg> const&) (stl_vector.h:557)
+       n1: 3342744 0x17F754: spdlog::details::circular_q<spdlog::details::async_msg>::circular_q(unsigned long) (circular_q.h:31)
+        n1: 3342744 0x17DAE8: spdlog::details::mpmc_blocking_queue<spdlog::details::async_msg>::mpmc_blocking_queue(unsigned long) (mpmc_blocking_q.h:27)
+         n1: 3342744 0x17A850: spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>) (thread_pool-inl.h:20)
+          n1: 3342744 0x186345: void std::_Construct<spdlog::details::thread_pool, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(spdlog::details::thread_pool*, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (stl_construct.h:119)
+           n1: 3342744 0x184E29: construct<spdlog::details::thread_pool, long unsigned int&, long unsigned int&, std::function<void()>&, std::function<void()>&> (alloc_traits.h:661)
+            n1: 3342744 0x184E29: std::_Sp_counted_ptr_inplace<spdlog::details::thread_pool, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>::_Sp_counted_ptr_inplace<unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:604)
+             n1: 3342744 0x1836E9: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::__shared_count<spdlog::details::thread_pool, std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(spdlog::details::thread_pool*&, std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:971)
+              n1: 3342744 0x181915: std::__shared_ptr<spdlog::details::thread_pool, (__gnu_cxx::_Lock_policy)2>::__shared_ptr<std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:1712)
+               n1: 3342744 0x180336: std::shared_ptr<spdlog::details::thread_pool>::shared_ptr<std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr.h:464)
+                n1: 3342744 0x17E720: std::shared_ptr<std::enable_if<!std::is_array<spdlog::details::thread_pool>::value, spdlog::details::thread_pool>::type> std::make_shared<spdlog::details::thread_pool, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr.h:1010)
+                 n1: 3342744 0x17C8BB: spdlog::init_thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>) (async.h:81)
+                  n1: 3342744 0x17C9EC: spdlog::init_thread_pool(unsigned long, unsigned long) (async.h:92)
+                   n1: 3342744 0x177E35: servercore::Logger::Initialize(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, spdlog::level::level_enum, unsigned long, spdlog::level::level_enum) (Logger.cpp:41)
+                    n1: 3342744 0x174E88: servercore::GlobalContext::Initialize() (GlobalContext.cpp:17)
+                     n1: 3342744 0x18C4D7: servercore::INetworkCore::Initialize(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:80)
+                      n1: 3342744 0x18BF84: servercore::INetworkCore::INetworkCore(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:14)
+                       n1: 3342744 0x18C6BF: servercore::Server::Server(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:97)
+                        n1: 3342744 0x12B258: std::__detail::_MakeUniq<servercore::Server>::__single_object std::make_unique<servercore::Server, std::function<std::shared_ptr<ClientSession> ()>&>(std::function<std::shared_ptr<ClientSession> ()>&) (unique_ptr.h:1070)
+                         n0: 3342744 0x119454: main (main.cpp:49)
+ n1: 196608 0x1A09AE: std::__new_allocator<unsigned char>::allocate(unsigned long, void const*) (new_allocator.h:151)
+  n1: 196608 0x1A08C6: allocate (alloc_traits.h:482)
+   n1: 196608 0x1A08C6: std::_Vector_base<unsigned char, std::allocator<unsigned char> >::_M_allocate(unsigned long) (stl_vector.h:381)
+    n1: 196608 0x1A7E25: std::vector<unsigned char, std::allocator<unsigned char> >::_M_default_append(unsigned long) (vector.tcc:663)
+     n1: 196608 0x1A7CEA: std::vector<unsigned char, std::allocator<unsigned char> >::resize(unsigned long) (stl_vector.h:1016)
+      n1: 196608 0x1A7B57: servercore::SendBuffer::SendBuffer(int) (SendBuffer.cpp:8)
+       n1: 196608 0x192ED0: servercore::SendBufferPool::SendBufferPool(int) (SendBufferPool.cpp:16)
+        n1: 196608 0x196671: void std::_Construct<servercore::SendBufferPool>(servercore::SendBufferPool*) (stl_construct.h:119)
+         n1: 196608 0x195A6A: construct<servercore::SendBufferPool> (alloc_traits.h:661)
+          n1: 196608 0x195A6A: std::_Sp_counted_ptr_inplace<servercore::SendBufferPool, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>::_Sp_counted_ptr_inplace<>(std::allocator<void>) (shared_ptr_base.h:604)
+           n1: 196608 0x195130: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::__shared_count<servercore::SendBufferPool, std::allocator<void>>(servercore::SendBufferPool*&, std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr_base.h:971)
+            n1: 196608 0x194695: std::__shared_ptr<servercore::SendBufferPool, (__gnu_cxx::_Lock_policy)2>::__shared_ptr<std::allocator<void>>(std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr_base.h:1712)
+             n1: 196608 0x193F54: std::shared_ptr<servercore::SendBufferPool>::shared_ptr<std::allocator<void>>(std::_Sp_alloc_shared_tag<std::allocator<void> >) (shared_ptr.h:464)
+              n1: 196608 0x193A75: std::shared_ptr<std::enable_if<!std::is_array<servercore::SendBufferPool>::value, servercore::SendBufferPool>::type> std::make_shared<servercore::SendBufferPool>() (shared_ptr.h:1010)
+               n1: 196608 0x19365C: __static_initialization_and_destruction_0() (SendBufferPool.cpp:10)
+                n1: 196608 0x193716: _GLOBAL__sub_I__ZN10servercore14SendBufferPool26S_SendBufferDeleterReleaseE (SendBufferPool.cpp:122)
+                 n1: 196608 0x4B38303: call_init (libc-start.c:145)
+                  n1: 196608 0x4B38303: __libc_start_main@@GLIBC_2.34 (libc-start.c:347)
+                   n0: 196608 0x1192A4: (below main) (in /home/cisco/Project/server/build/Server/Server)
+ n1: 73728 0x491938E: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+  n1: 73728 0x400571E: call_init.part.0 (dl-init.c:74)
+   n1: 73728 0x4005823: call_init (dl-init.c:120)
+    n1: 73728 0x4005823: _dl_init (dl-init.c:121)
+     n0: 73728 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n0: 12471 in 58 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=59
+#-----------
+time=6001204
+mem_heap_B=3494415
+mem_heap_extra_B=961
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=60
+#-----------
+time=6002877
+mem_heap_B=3428837
+mem_heap_extra_B=955
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=61
+#-----------
+time=6007802
+mem_heap_B=3428815
+mem_heap_extra_B=937
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=62
+#-----------
+time=6008525
+mem_heap_B=3428303
+mem_heap_extra_B=929
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=63
+#-----------
+time=6174411
+mem_heap_B=3428130
+mem_heap_extra_B=918
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=64
+#-----------
+time=6179426
+mem_heap_B=3428103
+mem_heap_extra_B=905
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=65
+#-----------
+time=6183827
+mem_heap_B=3426055
+mem_heap_extra_B=897
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=66
+#-----------
+time=6186846
+mem_heap_B=3425991
+mem_heap_extra_B=889
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=67
+#-----------
+time=6188344
+mem_heap_B=3425647
+mem_heap_extra_B=873
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=68
+#-----------
+time=6188980
+mem_heap_B=3424679
+mem_heap_extra_B=833
+mem_stacks_B=0
+heap_tree=detailed
+n3: 3424679 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 3342744 0x18684C: std::__new_allocator<spdlog::details::async_msg>::allocate(unsigned long, void const*) (new_allocator.h:151)
+  n1: 3342744 0x18551E: allocate (alloc_traits.h:482)
+   n1: 3342744 0x18551E: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_M_allocate(unsigned long) (stl_vector.h:381)
+    n1: 3342744 0x18458A: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_M_create_storage(unsigned long) (stl_vector.h:398)
+     n1: 3342744 0x183052: std::_Vector_base<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::_Vector_base(unsigned long, std::allocator<spdlog::details::async_msg> const&) (stl_vector.h:335)
+      n1: 3342744 0x1812AA: std::vector<spdlog::details::async_msg, std::allocator<spdlog::details::async_msg> >::vector(unsigned long, std::allocator<spdlog::details::async_msg> const&) (stl_vector.h:557)
+       n1: 3342744 0x17F754: spdlog::details::circular_q<spdlog::details::async_msg>::circular_q(unsigned long) (circular_q.h:31)
+        n1: 3342744 0x17DAE8: spdlog::details::mpmc_blocking_queue<spdlog::details::async_msg>::mpmc_blocking_queue(unsigned long) (mpmc_blocking_q.h:27)
+         n1: 3342744 0x17A850: spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>) (thread_pool-inl.h:20)
+          n1: 3342744 0x186345: void std::_Construct<spdlog::details::thread_pool, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(spdlog::details::thread_pool*, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (stl_construct.h:119)
+           n1: 3342744 0x184E29: construct<spdlog::details::thread_pool, long unsigned int&, long unsigned int&, std::function<void()>&, std::function<void()>&> (alloc_traits.h:661)
+            n1: 3342744 0x184E29: std::_Sp_counted_ptr_inplace<spdlog::details::thread_pool, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>::_Sp_counted_ptr_inplace<unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:604)
+             n1: 3342744 0x1836E9: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::__shared_count<spdlog::details::thread_pool, std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(spdlog::details::thread_pool*&, std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:971)
+              n1: 3342744 0x181915: std::__shared_ptr<spdlog::details::thread_pool, (__gnu_cxx::_Lock_policy)2>::__shared_ptr<std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:1712)
+               n1: 3342744 0x180336: std::shared_ptr<spdlog::details::thread_pool>::shared_ptr<std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr.h:464)
+                n1: 3342744 0x17E720: std::shared_ptr<std::enable_if<!std::is_array<spdlog::details::thread_pool>::value, spdlog::details::thread_pool>::type> std::make_shared<spdlog::details::thread_pool, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr.h:1010)
+                 n1: 3342744 0x17C8BB: spdlog::init_thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>) (async.h:81)
+                  n1: 3342744 0x17C9EC: spdlog::init_thread_pool(unsigned long, unsigned long) (async.h:92)
+                   n1: 3342744 0x177E35: servercore::Logger::Initialize(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, spdlog::level::level_enum, unsigned long, spdlog::level::level_enum) (Logger.cpp:41)
+                    n1: 3342744 0x174E88: servercore::GlobalContext::Initialize() (GlobalContext.cpp:17)
+                     n1: 3342744 0x18C4D7: servercore::INetworkCore::Initialize(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:80)
+                      n1: 3342744 0x18BF84: servercore::INetworkCore::INetworkCore(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:14)
+                       n1: 3342744 0x18C6BF: servercore::Server::Server(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:97)
+                        n1: 3342744 0x12B258: std::__detail::_MakeUniq<servercore::Server>::__single_object std::make_unique<servercore::Server, std::function<std::shared_ptr<ClientSession> ()>&>(std::function<std::shared_ptr<ClientSession> ()>&) (unique_ptr.h:1070)
+                         n0: 3342744 0x119454: main (main.cpp:49)
+ n1: 73728 0x491938E: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+  n1: 73728 0x400571E: call_init.part.0 (dl-init.c:74)
+   n1: 73728 0x4005823: call_init (dl-init.c:120)
+    n1: 73728 0x4005823: _dl_init (dl-init.c:121)
+     n0: 73728 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n0: 8207 in 59 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=69
+#-----------
+time=6306960
+mem_heap_B=3424311
+mem_heap_extra_B=809
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=70
+#-----------
+time=6307702
+mem_heap_B=3424303
+mem_heap_extra_B=793
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=71
+#-----------
+time=7299273
+mem_heap_B=81559
+mem_heap_extra_B=777
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=72
+#-----------
+time=7300196
+mem_heap_B=81319
+mem_heap_extra_B=769
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=73
+#-----------
+time=7301427
+mem_heap_B=81295
+mem_heap_extra_B=753
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=74
+#-----------
+time=7302267
+mem_heap_B=81159
+mem_heap_extra_B=705
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=75
+#-----------
+time=7303095
+mem_heap_B=81055
+mem_heap_extra_B=657
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=76
+#-----------
+time=7303935
+mem_heap_B=80919
+mem_heap_extra_B=609
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=77
+#-----------
+time=7304763
+mem_heap_B=80815
+mem_heap_extra_B=561
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=78
+#-----------
+time=7305591
+mem_heap_B=80711
+mem_heap_extra_B=513
+mem_stacks_B=0
+heap_tree=detailed
+n3: 80711 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 73728 0x491938E: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+  n1: 73728 0x400571E: call_init.part.0 (dl-init.c:74)
+   n1: 73728 0x4005823: call_init (dl-init.c:120)
+    n1: 73728 0x4005823: _dl_init (dl-init.c:121)
+     n0: 73728 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n0: 4935 in 59 places, all below massif's threshold (1.00%)
+ n1: 2048 0x4B931B4: _IO_file_doallocate (filedoalloc.c:101)
+  n3: 2048 0x4BA3523: _IO_doallocbuf (genops.c:347)
+   n1: 1024 0x4BA0883: _IO_file_underflow@@GLIBC_2.2.5 (fileops.c:486)
+    n1: 1024 0x4BA35D1: _IO_default_uflow (genops.c:362)
+     n1: 1024 0x4B9D0B7: getc (getc.c:40)
+      n1: 1024 0x498A1C8: __gnu_cxx::stdio_sync_filebuf<char, std::char_traits<char> >::underflow() (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+       n1: 1024 0x4999062: std::istream::sentry::sentry(std::istream&, bool) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+        n1: 1024 0x499AEAF: std::basic_istream<char, std::char_traits<char> >& std::operator>><char, std::char_traits<char> >(std::basic_istream<char, std::char_traits<char> >&, char&) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+         n0: 1024 0x1194A7: main (main.cpp:60)
+   n1: 1024 0x4BA0F8F: _IO_file_overflow@@GLIBC_2.2.5 (fileops.c:745)
+    n1: 1024 0x4BA1AAE: _IO_new_file_xsputn (fileops.c:1244)
+     n1: 1024 0x4BA1AAE: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1197)
+      n1: 1024 0x4B9F6A1: fwrite_unlocked (iofwrite_u.c:42)
+       n1: 1024 0x178AA8: spdlog::details::os::fwrite_bytes(void const*, unsigned long, _IO_FILE*) (os-inl.h:562)
+        n1: 1024 0x18985F: spdlog::sinks::ansicolor_sink<spdlog::details::console_mutex>::print_range_(fmt::v12::basic_memory_buffer<char, 250ul, fmt::v12::detail::allocator<char> > const&, unsigned long, unsigned long) const (ansicolor_sink-inl.h:123)
+         n1: 1024 0x189277: spdlog::sinks::ansicolor_sink<spdlog::details::console_mutex>::log(spdlog::details::log_msg const&) (ansicolor_sink-inl.h:51)
+          n1: 1024 0x17BE40: spdlog::async_logger::backend_sink_it_(spdlog::details::log_msg const&) (async_logger-inl.h:63)
+           n1: 1024 0x17AF6B: spdlog::details::thread_pool::process_next_msg_() (thread_pool-inl.h:104)
+            n1: 1024 0x17AE7E: spdlog::details::thread_pool::worker_loop_() (thread_pool-inl.h:92)
+             n1: 1024 0x17A78C: spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}::operator()() const (thread_pool-inl.h:29)
+              n1: 1024 0x1899F3: void std::__invoke_impl<void, spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}>(std::__invoke_other, spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}&&) (invoke.h:61)
+               n1: 1024 0x1899AE: std::__invoke_result<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}>::type std::__invoke<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}>(spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}&&) (invoke.h:96)
+                n1: 1024 0x189929: void std::thread::_Invoker<std::tuple<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}> >::_M_invoke<0ul>(std::_Index_tuple<0ul>) (std_thread.h:292)
+                 n1: 1024 0x1897E7: std::thread::_Invoker<std::tuple<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}> >::operator()() (std_thread.h:299)
+                  n1: 1024 0x188FBB: std::thread::_State_impl<std::thread::_Invoker<std::tuple<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}> > >::_M_run() (std_thread.h:244)
+                   n1: 1024 0x494EDB3: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+                    n1: 1024 0x4BAAAA3: start_thread (pthread_create.c:447)
+                     n0: 1024 0x4C37A63: clone (clone.S:100)
+   n0: 0 in 1 place, below massif's threshold (1.00%)
+#-----------
+snapshot=79
+#-----------
+time=7306419
+mem_heap_B=80607
+mem_heap_extra_B=465
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=80
+#-----------
+time=7307259
+mem_heap_B=80471
+mem_heap_extra_B=417
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=81
+#-----------
+time=7308087
+mem_heap_B=80367
+mem_heap_extra_B=369
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=82
+#-----------
+time=7308773
+mem_heap_B=80031
+mem_heap_extra_B=329
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=83
+#-----------
+time=7309682
+mem_heap_B=78754
+mem_heap_extra_B=270
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=84
+#-----------
+time=7326487
+mem_heap_B=78690
+mem_heap_extra_B=262
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=85
+#-----------
+time=7327456
+mem_heap_B=77842
+mem_heap_extra_B=246
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=86
+#-----------
+time=7328949
+mem_heap_B=77186
+mem_heap_extra_B=190
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=87
+#-----------
+time=7329670
+mem_heap_B=76850
+mem_heap_extra_B=150
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=88
+#-----------
+time=7340981
+mem_heap_B=3122
+mem_heap_extra_B=142
+mem_stacks_B=0
+heap_tree=detailed
+n5: 3122 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 2048 0x4B931B4: _IO_file_doallocate (filedoalloc.c:101)
+  n3: 2048 0x4BA3523: _IO_doallocbuf (genops.c:347)
+   n1: 1024 0x4BA0883: _IO_file_underflow@@GLIBC_2.2.5 (fileops.c:486)
+    n1: 1024 0x4BA35D1: _IO_default_uflow (genops.c:362)
+     n1: 1024 0x4B9D0B7: getc (getc.c:40)
+      n1: 1024 0x498A1C8: __gnu_cxx::stdio_sync_filebuf<char, std::char_traits<char> >::underflow() (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+       n1: 1024 0x4999062: std::istream::sentry::sentry(std::istream&, bool) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+        n1: 1024 0x499AEAF: std::basic_istream<char, std::char_traits<char> >& std::operator>><char, std::char_traits<char> >(std::basic_istream<char, std::char_traits<char> >&, char&) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+         n0: 1024 0x1194A7: main (main.cpp:60)
+   n1: 1024 0x4BA0F8F: _IO_file_overflow@@GLIBC_2.2.5 (fileops.c:745)
+    n1: 1024 0x4BA1AAE: _IO_new_file_xsputn (fileops.c:1244)
+     n1: 1024 0x4BA1AAE: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1197)
+      n1: 1024 0x4B9F6A1: fwrite_unlocked (iofwrite_u.c:42)
+       n1: 1024 0x178AA8: spdlog::details::os::fwrite_bytes(void const*, unsigned long, _IO_FILE*) (os-inl.h:562)
+        n1: 1024 0x18985F: spdlog::sinks::ansicolor_sink<spdlog::details::console_mutex>::print_range_(fmt::v12::basic_memory_buffer<char, 250ul, fmt::v12::detail::allocator<char> > const&, unsigned long, unsigned long) const (ansicolor_sink-inl.h:123)
+         n1: 1024 0x189277: spdlog::sinks::ansicolor_sink<spdlog::details::console_mutex>::log(spdlog::details::log_msg const&) (ansicolor_sink-inl.h:51)
+          n1: 1024 0x17BE40: spdlog::async_logger::backend_sink_it_(spdlog::details::log_msg const&) (async_logger-inl.h:63)
+           n1: 1024 0x17AF6B: spdlog::details::thread_pool::process_next_msg_() (thread_pool-inl.h:104)
+            n1: 1024 0x17AE7E: spdlog::details::thread_pool::worker_loop_() (thread_pool-inl.h:92)
+             n1: 1024 0x17A78C: spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}::operator()() const (thread_pool-inl.h:29)
+              n1: 1024 0x1899F3: void std::__invoke_impl<void, spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}>(std::__invoke_other, spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}&&) (invoke.h:61)
+               n1: 1024 0x1899AE: std::__invoke_result<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}>::type std::__invoke<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}>(spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}&&) (invoke.h:96)
+                n1: 1024 0x189929: void std::thread::_Invoker<std::tuple<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}> >::_M_invoke<0ul>(std::_Index_tuple<0ul>) (std_thread.h:292)
+                 n1: 1024 0x1897E7: std::thread::_Invoker<std::tuple<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}> >::operator()() (std_thread.h:299)
+                  n1: 1024 0x188FBB: std::thread::_State_impl<std::thread::_Invoker<std::tuple<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}> > >::_M_run() (std_thread.h:244)
+                   n1: 1024 0x494EDB3: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+                    n1: 1024 0x4BAAAA3: start_thread (pthread_create.c:447)
+                     n0: 1024 0x4C37A63: clone (clone.S:100)
+   n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 640 0x40145AB: calloc (rtld-malloc.h:44)
+  n1: 640 0x40145AB: allocate_dtv (dl-tls.c:370)
+   n1: 640 0x40145AB: _dl_allocate_tls (dl-tls.c:629)
+    n1: 640 0x4BAB616: allocate_stack (allocatestack.c:429)
+     n1: 640 0x4BAB616: pthread_create@@GLIBC_2.34 (pthread_create.c:655)
+      n2: 640 0x494EEB0: std::thread::_M_start_thread(std::unique_ptr<std::thread::_State, std::default_delete<std::thread::_State> >, void (*)()) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+       n1: 320 0x1831FC: std::thread::thread<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}, , void>(spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}&&) (std_thread.h:164)
+        n1: 320 0x17FA9C: construct<std::thread, spdlog::details::thread_pool::thread_pool(size_t, size_t, std::function<void()>, std::function<void()>)::<lambda()> > (new_allocator.h:191)
+         n1: 320 0x17FA9C: construct<std::thread, spdlog::details::thread_pool::thread_pool(size_t, size_t, std::function<void()>, std::function<void()>)::<lambda()> > (alloc_traits.h:538)
+          n1: 320 0x17FA9C: void std::vector<std::thread, std::allocator<std::thread> >::_M_realloc_insert<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}>(__gnu_cxx::__normal_iterator<std::thread*, std::vector<std::thread, std::allocator<std::thread> > >, spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}&&) (vector.tcc:468)
+           n1: 320 0x17DE70: std::thread& std::vector<std::thread, std::allocator<std::thread> >::emplace_back<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}>(spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}&&) (vector.tcc:123)
+            n1: 320 0x17A932: spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>) (thread_pool-inl.h:27)
+             n1: 320 0x186345: void std::_Construct<spdlog::details::thread_pool, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(spdlog::details::thread_pool*, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (stl_construct.h:119)
+              n1: 320 0x184E29: construct<spdlog::details::thread_pool, long unsigned int&, long unsigned int&, std::function<void()>&, std::function<void()>&> (alloc_traits.h:661)
+               n1: 320 0x184E29: std::_Sp_counted_ptr_inplace<spdlog::details::thread_pool, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>::_Sp_counted_ptr_inplace<unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:604)
+                n1: 320 0x1836E9: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::__shared_count<spdlog::details::thread_pool, std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(spdlog::details::thread_pool*&, std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:971)
+                 n1: 320 0x181915: std::__shared_ptr<spdlog::details::thread_pool, (__gnu_cxx::_Lock_policy)2>::__shared_ptr<std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr_base.h:1712)
+                  n1: 320 0x180336: std::shared_ptr<spdlog::details::thread_pool>::shared_ptr<std::allocator<void>, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(std::_Sp_alloc_shared_tag<std::allocator<void> >, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr.h:464)
+                   n1: 320 0x17E720: std::shared_ptr<std::enable_if<!std::is_array<spdlog::details::thread_pool>::value, spdlog::details::thread_pool>::type> std::make_shared<spdlog::details::thread_pool, unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&>(unsigned long&, unsigned long&, std::function<void ()>&, std::function<void ()>&) (shared_ptr.h:1010)
+                    n1: 320 0x17C8BB: spdlog::init_thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>) (async.h:81)
+                     n1: 320 0x17C9EC: spdlog::init_thread_pool(unsigned long, unsigned long) (async.h:92)
+                      n1: 320 0x177E35: servercore::Logger::Initialize(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, spdlog::level::level_enum, unsigned long, spdlog::level::level_enum) (Logger.cpp:41)
+                       n1: 320 0x174E88: servercore::GlobalContext::Initialize() (GlobalContext.cpp:17)
+                        n1: 320 0x18C4D7: servercore::INetworkCore::Initialize(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:80)
+                         n1: 320 0x18BF84: servercore::INetworkCore::INetworkCore(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:14)
+                          n1: 320 0x18C6BF: servercore::Server::Server(std::function<std::shared_ptr<servercore::Session> ()>) (NetworkCore.cpp:97)
+                           n1: 320 0x12B258: std::__detail::_MakeUniq<servercore::Server>::__single_object std::make_unique<servercore::Server, std::function<std::shared_ptr<ClientSession> ()>&>(std::function<std::shared_ptr<ClientSession> ()>&) (unique_ptr.h:1070)
+                            n0: 320 0x119454: main (main.cpp:49)
+       n1: 320 0x18D234: std::thread::thread<servercore::INetworkCore::NetworkDispatch()::{lambda()#1}, , void>(servercore::INetworkCore::NetworkDispatch()::{lambda()#1}&&) (std_thread.h:164)
+        n1: 320 0x18C45B: servercore::INetworkCore::NetworkDispatch() (NetworkCore.cpp:52)
+         n1: 320 0x18C97F: servercore::Server::Start(unsigned short) (NetworkCore.cpp:126)
+          n0: 320 0x11946D: main (main.cpp:50)
+ n1: 339 0x4BEF722: __tzfile_read (tzfile.c:280)
+  n1: 339 0x4BEE79B: tzset_internal (tzset.c:405)
+   n1: 339 0x4BEF18A: __tz_convert (tzset.c:577)
+    n1: 339 0x11ED2B: spdlog::details::os::localtime(long const&) (os-inl.h:93)
+     n1: 339 0x120F28: spdlog::pattern_formatter::get_time_(spdlog::details::log_msg const&) (pattern_formatter-inl.h:1017)
+      n1: 339 0x120D74: spdlog::pattern_formatter::format(spdlog::details::log_msg const&, fmt::v12::basic_memory_buffer<char, 250ul, fmt::v12::detail::allocator<char> >&) (pattern_formatter-inl.h:995)
+       n1: 339 0x189219: spdlog::sinks::ansicolor_sink<spdlog::details::console_mutex>::log(spdlog::details::log_msg const&) (ansicolor_sink-inl.h:48)
+        n1: 339 0x17BE40: spdlog::async_logger::backend_sink_it_(spdlog::details::log_msg const&) (async_logger-inl.h:63)
+         n1: 339 0x17AF6B: spdlog::details::thread_pool::process_next_msg_() (thread_pool-inl.h:104)
+          n1: 339 0x17AE7E: spdlog::details::thread_pool::worker_loop_() (thread_pool-inl.h:92)
+           n1: 339 0x17A78C: spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}::operator()() const (thread_pool-inl.h:29)
+            n1: 339 0x1899F3: void std::__invoke_impl<void, spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}>(std::__invoke_other, spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}&&) (invoke.h:61)
+             n1: 339 0x1899AE: std::__invoke_result<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}>::type std::__invoke<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}>(spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}&&) (invoke.h:96)
+              n1: 339 0x189929: void std::thread::_Invoker<std::tuple<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}> >::_M_invoke<0ul>(std::_Index_tuple<0ul>) (std_thread.h:292)
+               n1: 339 0x1897E7: std::thread::_Invoker<std::tuple<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}> >::operator()() (std_thread.h:299)
+                n1: 339 0x188FBB: std::thread::_State_impl<std::thread::_Invoker<std::tuple<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}> > >::_M_run() (std_thread.h:244)
+                 n1: 339 0x494EDB3: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+                  n1: 339 0x4BAAAA3: start_thread (pthread_create.c:447)
+                   n0: 339 0x4C37A63: clone (clone.S:100)
+ n1: 60 0x4BEDD94: __tzstring_len (tzset.c:98)
+  n1: 60 0x4BEFEDB: __tzfile_read (tzfile.c:413)
+   n1: 60 0x4BEE79B: tzset_internal (tzset.c:405)
+    n1: 60 0x4BEF18A: __tz_convert (tzset.c:577)
+     n1: 60 0x11ED2B: spdlog::details::os::localtime(long const&) (os-inl.h:93)
+      n1: 60 0x120F28: spdlog::pattern_formatter::get_time_(spdlog::details::log_msg const&) (pattern_formatter-inl.h:1017)
+       n1: 60 0x120D74: spdlog::pattern_formatter::format(spdlog::details::log_msg const&, fmt::v12::basic_memory_buffer<char, 250ul, fmt::v12::detail::allocator<char> >&) (pattern_formatter-inl.h:995)
+        n1: 60 0x189219: spdlog::sinks::ansicolor_sink<spdlog::details::console_mutex>::log(spdlog::details::log_msg const&) (ansicolor_sink-inl.h:48)
+         n1: 60 0x17BE40: spdlog::async_logger::backend_sink_it_(spdlog::details::log_msg const&) (async_logger-inl.h:63)
+          n1: 60 0x17AF6B: spdlog::details::thread_pool::process_next_msg_() (thread_pool-inl.h:104)
+           n1: 60 0x17AE7E: spdlog::details::thread_pool::worker_loop_() (thread_pool-inl.h:92)
+            n1: 60 0x17A78C: spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}::operator()() const (thread_pool-inl.h:29)
+             n1: 60 0x1899F3: void std::__invoke_impl<void, spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}>(std::__invoke_other, spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}&&) (invoke.h:61)
+              n1: 60 0x1899AE: std::__invoke_result<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}>::type std::__invoke<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}>(spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}&&) (invoke.h:96)
+               n1: 60 0x189929: void std::thread::_Invoker<std::tuple<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}> >::_M_invoke<0ul>(std::_Index_tuple<0ul>) (std_thread.h:292)
+                n1: 60 0x1897E7: std::thread::_Invoker<std::tuple<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}> >::operator()() (std_thread.h:299)
+                 n1: 60 0x188FBB: std::thread::_State_impl<std::thread::_Invoker<std::tuple<spdlog::details::thread_pool::thread_pool(unsigned long, unsigned long, std::function<void ()>, std::function<void ()>)::{lambda()#1}> > >::_M_run() (std_thread.h:244)
+                  n1: 60 0x494EDB3: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+                   n1: 60 0x4BAAAA3: start_thread (pthread_create.c:447)
+                    n0: 60 0x4C37A63: clone (clone.S:100)
+ n0: 35 in 57 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=89
+#-----------
+time=7342080
+mem_heap_B=2098
+mem_heap_extra_B=134
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=90
+#-----------
+time=7342946
+mem_heap_B=1054
+mem_heap_extra_B=106
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=91
+#-----------
+time=7343671
+mem_heap_B=659
+mem_heap_extra_B=29
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=92
+#-----------
+time=7344396
+mem_heap_B=0
+mem_heap_extra_B=0
+mem_stacks_B=0
+heap_tree=empty

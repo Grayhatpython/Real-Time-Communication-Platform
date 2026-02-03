@@ -30,3 +30,5 @@ constexpr EventFd   INVALID_EVENT_FD_VALUE  = INVALID_FILE_DESCRIPTOR_VALUE;
 
 constexpr int RESULT_OK = 0;
 constexpr int RESULT_ERROR = -1; 
+
+constexpr size_t CACHE_LINE_SIZE = 64;

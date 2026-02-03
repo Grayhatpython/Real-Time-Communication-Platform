@@ -4,14 +4,37 @@
 #include "SendBuffer.hpp"
 #include "SessionManager.hpp"
 
+enum class PacketId : uint16_t
+{
+    Stat = 200,
+};
+
 #pragma pack(push, 1)
-struct TestPacket : PacketHeader
+struct StatPacket : PacketHeader
 {
     uint64 playerId;
-    uint64 playerMp;
+    uint32 playerHp;
+    uint32 playerMp;
+
+    bool Serialize(servercore::BinaryWriter& bw) const
+    {
+        return bw.Write(static_cast<uint16>(sizeof(StatPacket))) && 
+            bw.Write(PacketId::Stat) && 
+            bw.Write<uint64>(playerId)
+            && bw.Write<uint32>(playerHp)
+            && bw.Write<uint32>(playerMp);
+    }
+
+    bool DeSerialize(servercore::BinaryReader& br) 
+    {
+        return br.Read(playerId)
+            && br.Read(playerHp)
+            && br.Read(playerMp);
+    }
 };
 #pragma pack(pop)
 
+/*
 class ParallelSessionSend
 {
 public:
@@ -77,6 +100,7 @@ public:
         }
     }
 };
+*/
 
 
 class ServerSession : public servercore::Session
@@ -84,7 +108,24 @@ class ServerSession : public servercore::Session
 public:
     virtual void OnConnected() override
     {
+        StatPacket statPacket;
+        statPacket.playerId = 333;
+        statPacket.playerHp = 1000;
+        statPacket.playerMp = 2000;
+
+        uint32 packetSize = static_cast<uint32>(sizeof(StatPacket));
+        auto segment = servercore::SendBufferArena::Allocate(packetSize);
+        servercore::BinaryWriter bw(segment->ptr, packetSize);
+
+        auto successed = statPacket.Serialize(bw);
+
+        auto sendContext = std::make_shared<servercore::SendContext>();
+        sendContext->sendBuffer = segment->sendBuffer;
+        sendContext->iovecBuf.iov_base = segment->ptr;
+        sendContext->iovecBuf.iov_len = static_cast<size_t>(packetSize);
+        sendContext->size = static_cast<size_t>(packetSize);
         
+        TryFlushSend(sendContext);
     }
 
     virtual void OnDisconnected() override

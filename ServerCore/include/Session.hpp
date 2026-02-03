@@ -4,36 +4,8 @@
 #include "NetworkEvent.hpp"
 #include "SendBuffer.hpp"
 
-constexpr size_t CACHE_LINE_SIZE = 64;
-
 namespace servercore
 {
-    struct SessionIdentity
-    {
-        SocketFd                    socketFd = INVALID_SOCKET_FD_VALUE;
-        uint64                      sessionId = 0;
-        std::atomic<SessionState>   state = SessionState::Disconnected;
-    };
-
-    alignas(64) struct SessionSendFlags
-    {
-        std::atomic<bool>   isSending{false};
-        std::atomic<uint32> sendRegisterCount{0};
-    };
-
-    struct SessionIOBuffer
-    {
-        Lock                                        lock;
-        std::queue<std::shared_ptr<SendContext>>    sendQueue;
-        StreamBuffer                                streamBuffer;
-    };
-
-    struct SessionEnv
-    {
-        NetworkAddress                          remoteAddress;
-        std::shared_ptr<INetworkDispatcher>     dispatcher;
-    };
-
     class Session : public EpollObject
     {
         friend class Acceptor;
@@ -102,7 +74,7 @@ namespace servercore
         uint64                                      _sessionId = 0;
         std::atomic<SessionState>                   _state = SessionState::Disconnected;
 
-        alignas(64) std::atomic<bool>				_isSending = false;
+        alignas(CACHE_LINE_SIZE) std::atomic<bool>				_isSending = false;
         std::atomic<uint32>							_sendRegisterCount = 0;
 
         Lock										_lock;

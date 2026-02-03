@@ -60,6 +60,24 @@ namespace servercore
         S_SendBufferDeleterRelease = true;
     }
 
+    void SendBufferPool::PoolClear()
+    {
+        std::lock_guard<std::mutex> lock(_lock);
+        while(_pool.empty() == false)
+        {
+            auto sendBuffer = _pool.front();
+            if(sendBuffer)
+            {
+                delete sendBuffer;
+                sendBuffer = nullptr;
+            }
+
+            _pool.pop();
+        }
+
+        NC_LOG_DEBUG("SendBuffer Pool Clear");
+    }
+
     std::shared_ptr<SendBufferSegment> SendBufferArena::Allocate(int32 size)
     {
         if (S_LCurrentSendBuffer == nullptr || S_LCurrentSendBuffer->CanUseSize(size) == false)
@@ -92,6 +110,7 @@ namespace servercore
     void SendBufferArena::SendBufferPoolClear() 
     { 
         S_SendBufferPool->ReleaseSendBufferDeleter();
+        S_SendBufferPool->PoolClear();
         S_SendBufferPool.reset(); 
     }
 
