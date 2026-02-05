@@ -34,21 +34,25 @@ set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)           # GLFW 설치 규칙 비활�
 # 이 명령어가 성공하면 ${OPENGL_LIBRARIES}, ${OPENGL_INCLUDE_DIR} 등의 변수가 CMake에 의해 설정
 find_package(OpenGL REQUIRED)
 
-# 'ServerCore' 하위 디렉토리에 있는 CMakeLists.txt 파일을 포함시키고 처리
-# 이 명령으로 ServerCore 라이브러리가 빌드 설정에 추가
-add_subdirectory(ServerCore)
+# 'engine' 하위 디렉토리에 있는 CMakeLists.txt 파일을 포함시키고 처리
+# 이 명령으로 engine 라이브러리가 빌드 설정에 추가
+add_subdirectory(src/engine)
 
-# 'Server' 하위 디렉토리에 있는 CMakeLists.txt 파일을 포함시키고 처리
-# 이 명령으로 Server 실행 파일이 빌드 설정에 추가됩니다.
-add_subdirectory(Server) 
+# 'network' 하위 디렉토리에 있는 CMakeLists.txt 파일을 포함시키고 처리
+# 이 명령으로 network 라이브러리가 빌드 설정에 추가
+add_subdirectory(src/network)
 
-# 'MonitoringServer' 하위 디렉토리에 있는 CMakeLists.txt 파일을 포함시키고 처리
-# 이 명령으로 Server 실행 파일이 빌드 설정에 추가됩니다.
-add_subdirectory(MonitoringServer) 
+# 'gameserver' 하위 디렉토리에 있는 CMakeLists.txt 파일을 포함시키고 처리
+# 이 명령으로 gameserver 실행 파일이 빌드 설정에 추가됩니다.
+add_subdirectory(apps/gameserver) 
+
+# 'gameclient' 하위 디렉토리에 있는 CMakeLists.txt 파일을 포함시키고 처리
+# 이 명령으로 gameclient 실행 파일이 빌드 설정에 추가됩니다.
+add_subdirectory(apps/gameclient) 
 
 # 'DummyClient' 하위 디렉토리에 있는 CMakeLists.txt 파일을 포함시키고 처리
 # 이 명령으로 Server 실행 파일이 빌드 설정에 추가됩니다.
-add_subdirectory(DummyClient) 
+# add_subdirectory(DummyClient) 
 
 
 # --- 빌드 명령어 가이드 ---
