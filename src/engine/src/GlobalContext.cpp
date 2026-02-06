@@ -1,3 +1,4 @@
+#include "engine/EnginePch.hpp"
 #include "engine/GlobalContext.hpp"
 #include "engine/MemoryPool.hpp"
 #include "engine/ThreadManager.hpp"
@@ -7,7 +8,7 @@ namespace engine
 {
 	GlobalContext::~GlobalContext()
 	{
-		Clear();
+	
 	}
 
 	bool GlobalContext::Initialize()
@@ -16,9 +17,8 @@ namespace engine
 
 		_memoryPool = new MemoryPool();
 		_threadManager = new ThreadManager();
-		// _sessionManager = new SessionManager();
 
-		if(_memoryPool == nullptr || _threadManager == nullptr )//_sessionManager == nullptr )
+		if(_memoryPool == nullptr || _threadManager == nullptr )
 			return false;
 
 		return true;
@@ -26,13 +26,6 @@ namespace engine
 
 	void GlobalContext::Clear()
 	{
-		//	TODO : Clear
-		// if(_sessionManager)
-		// {
-			// delete _sessionManager;
-			// _sessionManager = nullptr;
-		// }
-
 		if (_threadManager)
 		{
 			delete _threadManager;
@@ -44,5 +37,8 @@ namespace engine
 			delete _memoryPool;
 			_memoryPool = nullptr;
 		}
+
+        //  async_logger 처리 및 스레드 작업 마무리
+        engine::Logger::Shutdown();
 	}
 }

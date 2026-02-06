@@ -1,4 +1,5 @@
 #pragma once
+#include "engine/GlobalContext.hpp"
 
 namespace engine
 {
@@ -137,17 +138,17 @@ namespace engine
 	}
 
 	template <typename T>
-	void cdelete(T* ptr) {
-		GMemoryPool->Delete(ptr);
+	inline void cdelete(T* ptr) {
+		GlobalContext::GetInstance().GetMemoryPool()->Delete(ptr);
 	}
 
 	template <typename T, typename... Args>
-	T* cnew(Args&&... args) {
-		return GMemoryPool->New<T>(std::forward<Args>(args)...);
+	inline T* cnew(Args&&... args) {
+		return GlobalContext::GetInstance().GetMemoryPool()->New<T>(std::forward<Args>(args)...);
 	}
 
 	template <typename T, typename... Args>
-	std::shared_ptr<T> MakeShared(Args&&... args) {
-		return GMemoryPool->MakeShared<T>(std::forward<Args>(args)...);
+	inline std::shared_ptr<T> MakeShared(Args&&... args) {
+		return GlobalContext::GetInstance().GetMemoryPool()->MakeShared<T>(std::forward<Args>(args)...);
 	}
 }

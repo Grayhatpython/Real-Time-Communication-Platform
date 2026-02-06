@@ -4,7 +4,7 @@ set(LIB_NAME "Network")
 # 모든 하위 디렉토리까지 재귀적으로 탐색하여 ".cpp" 확장자를 가진 모든 파일을 찾아서 SOURCES 변수에 저장
 # GLOB는 편리하지만, 소스 파일이 추가되거나 삭제되었을 때 CMake를 수동으로 다시 실행해야 할 수 있습
 file(GLOB_RECURSE SOURCES "src/*.cpp")
-file(GLOB_RECURSE HEADERS "include/*.hpp")
+file(GLOB_RECURSE HEADERS "include/network/*.hpp")
 
 # 'LIB_NAME' (즉, "ServerCore")이라는 이름의 라이브러리를 생성
 # STATIC 키워드는 이 라이브러리가 정적 라이브러리(.lib 또는 .a)로 빌드됨을 의미

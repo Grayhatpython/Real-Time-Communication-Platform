@@ -6,14 +6,16 @@ namespace network
     class Session;
     class Acceptor;
     class GlobalContext;
-    class SessionManager;
+    class ISessionRegistry;
     class INetworkDispatcher;
-
-    class INetworkCore : public std::enable_shared_from_this<INetworkCore>
+    class NetworkCore : public std::enable_shared_from_this<NetworkCore>
     {
     public:
-        INetworkCore(std::function<std::shared_ptr<Session>()> sessionFactory);
-        virtual ~INetworkCore();
+        explicit NetworkCore(ISessionRegistry*  sessionRegistry);
+        virtual ~NetworkCore();
+
+        NetworkCore(const NetworkCore&) = delete;
+        NetworkCore& operator=(const NetworkCore&) = delete;
 
     public:
         virtual void Stop();
@@ -22,10 +24,11 @@ namespace network
         void NetworkDispatch();
 
     private:
-        void Initialize(std::function<std::shared_ptr<Session>()> sessionFactory);
+        void Initialize();
 
     protected:
         std::shared_ptr<INetworkDispatcher>             _networkDispatcher;
+        ISessionRegistry*                               _sessionRegistry = nullptr;
 
         std::thread                                     _dispatchThread;
 
@@ -37,10 +40,10 @@ namespace network
 
     };
 
-    class Server : public INetworkCore
+    class Server : public NetworkCore
     {
     public:
-       Server(std::function<std::shared_ptr<Session>()> sessionFactory);
+       explicit Server(ISessionRegistry*  sessionRegistry);
        virtual ~Server() override;
 
     public:
@@ -53,10 +56,10 @@ namespace network
 		uint16								_port = 0;
     };
 
-    class Client : public INetworkCore
+    class Client : public NetworkCore
     {
     public:
-       Client(std::function<std::shared_ptr<Session>()> sessionFactory);
+       explicit Client(ISessionRegistry*  sessionRegistry);
        virtual ~Client() override;
 
     public:

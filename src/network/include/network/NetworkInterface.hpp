@@ -1,28 +1,10 @@
 #pragma once
+#include "Enums.hpp"
 
 namespace network
 {
+    class NetworkEvent;
     class INetworkObject;
-    class INetworkEvent
-    {
-    public:
-        INetworkEvent(NetworkEventType type)
-            : _type(type)
-        {
-
-        }
-        virtual ~INetworkEvent() = default;
-
-    public:
-        NetworkEventType                    GetNetworkEventType() const { return _type; }
-        std::shared_ptr<INetworkObject>     GetOwner() { return _owner; }
-
-        void                                SetOwner(std::shared_ptr<INetworkObject> owner) { _owner = owner; }
-
-    protected:
-        NetworkEventType                    _type = NetworkEventType::None;
-        std::shared_ptr<INetworkObject>     _owner;
-    };
 
     class INetworkObject : public std::enable_shared_from_this<INetworkObject>
     {
@@ -32,13 +14,13 @@ namespace network
     public:
         virtual NetworkObjectType   GetNetworkObjectType() = 0;
         virtual SocketFd            GetSocketFd() const = 0;
-        virtual void                Dispatch(INetworkEvent* networkEvent) = 0;  
+        virtual void                Dispatch(NetworkEvent* networkEvent) = 0;  
     };
 
-    class EpollObject : public INetworkObject
+    class IEpollObject : public INetworkObject
     {
     public:
-        virtual ~EpollObject() = default;
+        virtual ~IEpollObject() = default;
 
     public:
         virtual NetworkObjectType   GetNetworkObjectType() = 0;

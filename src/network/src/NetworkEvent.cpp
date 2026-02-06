@@ -1,7 +1,7 @@
-#include "NetworkPch.hpp"
-#include "NetworkEvent.hpp"
-#include "Session.hpp"
-#include "Acceptor.hpp"
+#include "network/NetworkPch.hpp"
+#include "network/NetworkEvent.hpp"
+#include "network/Session.hpp"
+#include "network/Acceptor.hpp"
 
 namespace network
 {

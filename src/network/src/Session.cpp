@@ -1,9 +1,9 @@
-#include "NetworkPch.hpp"
-#include "Session.hpp"
-#include "NetworkUtils.hpp"
-#include "SessionManager.hpp"
-#include "NetworkDispatcher.hpp"
+#include "network/NetworkPch.hpp"
+#include "network/Session.hpp"
+#include "network/NetworkUtils.hpp"
+#include "network/NetworkDispatcher.hpp"
 
+#include "engine/BinaryReader.hpp"
 
 namespace network
 {
@@ -83,7 +83,7 @@ namespace network
 		
 		if(_state.compare_exchange_strong(expected, SessionState::Disconnected, std::memory_order_acq_rel, std::memory_order_acquire))
 		{	
-			DisconnectEvent* disconnectEvent = cnew<DisconnectEvent>();
+			DisconnectEvent* disconnectEvent = engine::cnew<DisconnectEvent>();
 			auto session = shared_from_this();
 			disconnectEvent->SetOwner(session);
 
@@ -103,7 +103,7 @@ namespace network
 			return false;
 
 		{
-			WriteLockGuard lock(_lock);
+			engine::WriteLockGuard lock(_lock);
 			_sendContextQueue.push(sendContext);
 		}
 
@@ -123,7 +123,7 @@ namespace network
 
 		std::queue<std::shared_ptr<SendContext>> sendContexts;
 		{
-			WriteLockGuard lock(_lock);
+			engine::WriteLockGuard lock(_lock);
 			
 			sendContexts.swap(_sendContextQueue);
 			
@@ -224,7 +224,7 @@ namespace network
 		//	Server Client Contents 
 		OnConnected();
 
-        NC_LOG_INFO("{} Session is Connected", _sessionId);
+        EN_LOG_INFO("{} Session is Connected", _sessionId);
 	}
 
 	//	Client Connect() -> ProcessConnect
@@ -232,7 +232,7 @@ namespace network
 	{
 		if(connectEvent)
 		{
-			cdelete(connectEvent);
+			engine::cdelete(connectEvent);
 			connectEvent = nullptr;
 		}
 
@@ -243,14 +243,6 @@ namespace network
 			return;
 		}
 
-		//	network dispatcher가 등록되지 않은 경우 정상 통신이 불가능하므로 제거
-		if(_networkDispatcher == nullptr)
-		{
-			NetworkUtils::CloseSocketFd(_socketFd);
-			GSessionManager->AbortSession(_sessionId);
-		}
-
-		
 		auto epollDispatcher = std::static_pointer_cast<EpollDispatcher>(_networkDispatcher);
 		if(epollDispatcher)
 		{
@@ -265,7 +257,7 @@ namespace network
 
 		OnConnected();
 
-		NC_LOG_INFO("Connected to the {} session(server)", _sessionId);
+		EN_LOG_INFO("Connected to the {} session(server)", _sessionId);
 	}
 
 	void Session::ProcessDisconnect(DisconnectEvent* disconnectEvent)
@@ -274,7 +266,7 @@ namespace network
 
 		if(disconnectEvent)
 		{
-			cdelete(disconnectEvent);
+			engine::cdelete(disconnectEvent);
 			disconnectEvent = nullptr;
 		}
 
@@ -289,7 +281,7 @@ namespace network
 			}
 		}
 
-		NC_LOG_INFO("{} session Disconnected", _sessionId);
+		EN_LOG_INFO("{} session Disconnected", _sessionId);
 	}
 
 	void Session::ProcessRecv(RecvEvent* recvEvent)
@@ -343,7 +335,7 @@ namespace network
 
 		if(recvEvent)
 		{
-			cdelete(recvEvent);
+			engine::cdelete(recvEvent);
 			recvEvent = nullptr;
 		}
 	}
@@ -362,7 +354,7 @@ namespace network
 				break;
 
 			//	헤더를 읽어서 전체 패킷 크기 확인
-			BinaryReader br(buffer, sizeof(PacketHeader));
+			engine::BinaryReader br(buffer, sizeof(PacketHeader));
 			uint16 packetSize = 0;
 			br.Read<uint16>(packetSize);
 
@@ -436,7 +428,7 @@ namespace network
 		return true;
     }
 
-    void Session::Dispatch(INetworkEvent* networkEvent)
+    void Session::Dispatch(NetworkEvent* networkEvent)
 	{
 		if(networkEvent)
 		{

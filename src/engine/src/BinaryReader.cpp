@@ -1,3 +1,4 @@
+#include "engine/EnginePch.hpp"
 #include "engine/BinaryReader.hpp"
 
 namespace engine

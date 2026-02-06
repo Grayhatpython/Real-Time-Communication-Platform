@@ -1,5 +1,5 @@
 #pragma once
-#include "Types.hpp"
+#include "network/Types.hpp"
 
 namespace network
 {

@@ -1,18 +1,5 @@
 #pragma once
 
-#define STREAM_ENDIANNESS 1 // big - Write
-
-#if defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_BIG_ENDIAN__)
-    #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-        #define PLATFORM_ENDIANNESS 0   //  little
-    #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-        #define PLATFORM_ENDIANNESS 1   //  big
-    #else
-        #error "Unknown platform endianness"
-    #endif
-#else
-    #error "Endianness macros not available"
-#endif
 
 #include <pthread.h>
 
@@ -46,6 +33,8 @@
 #include "ThreadLocal.hpp"
 #include "GlobalContext.hpp"
 #include "Logger.hpp"
+#include "MemoryPool.hpp"
+#include "Lock.hpp"
 
 
 

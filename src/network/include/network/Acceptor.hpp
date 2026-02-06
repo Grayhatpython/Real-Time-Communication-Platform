@@ -4,9 +4,9 @@
 namespace network
 {
     class AcceptEvent;
-	class Acceptor : public EpollObject
+	class ISessionRegistry;
+	class Acceptor : public IEpollObject
 	{
-		friend class Server;
 		
 	public:
 		Acceptor();
@@ -19,7 +19,7 @@ namespace network
 	public:
 		virtual NetworkObjectType   GetNetworkObjectType() override { return NetworkObjectType::Acceptor; }
 		virtual SocketFd            GetSocketFd() const override { return _listenSocketFd; } 
-		virtual void                Dispatch(INetworkEvent* networkEvent) override;
+		virtual void                Dispatch(NetworkEvent* networkEvent) override;
 
 	private:
 		void                        ProcessAccept(AcceptEvent* acceptEvent);
@@ -28,8 +28,12 @@ namespace network
 		void									SetNetworkDispatcher(std::shared_ptr<INetworkDispatcher> networkDispatcher) { _networkDispatcher = networkDispatcher; }
 		std::shared_ptr<INetworkDispatcher>		GetNetworkDispatcher() { return _networkDispatcher; }
 
+		void									SetSessionRegistry(ISessionRegistry*  sessionRegistry) { _sessionRegistry = sessionRegistry; }
+		ISessionRegistry*  						GetSessionRegistry() { return _sessionRegistry; }
+
 	private:
         SocketFd								_listenSocketFd = INVALID_SOCKET_FD_VALUE;
 		std::shared_ptr<INetworkDispatcher> 	_networkDispatcher;
+		ISessionRegistry*  						_sessionRegistry = nullptr;
 	};
 }

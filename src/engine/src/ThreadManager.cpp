@@ -1,3 +1,4 @@
+#include "engine/EnginePch.hpp"
 #include "engine/ThreadManager.hpp"
 #include "engine/MemoryPool.hpp"
 
@@ -273,13 +274,22 @@ namespace engine
 	{
 		//	각 Thread별로 TLS 영역에 할당된 SendBuffer 정리 
 		// SendBufferArena::ThreadSendBufferClear();
-		EN_LOG_INFO("Thread Send Buffer Clear");
+
+		LDestroyTLSCallback();
 
 		//	MemoryPool에서 각 Thread별로 TLS 영역에 할당된 freeList Memory 정리
-		GMemoryPool->ThreadLocalCacheClear();
+		GlobalContext::GetInstance().GetMemoryPool()->ThreadLocalCacheClear();
 		EN_LOG_INFO("Thread Local Cache Clear");
 
 		EN_LOG_INFO("Destroy Thread Local");
+	}
+
+	void ThreadManager::RegisterDestroyThreadLocal(std::function<void(void)> destroyTLSCallback)
+	{
+		if(destroyTLSCallback)
+		{
+			LDestroyTLSCallback = std::move(destroyTLSCallback);
+		}
 	}
 
     void ThreadManager::SetCurrentThreadName(const std::string &name)

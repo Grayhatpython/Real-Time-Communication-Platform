@@ -1,6 +1,6 @@
-#include "NetworkPch.hpp"
-#include "SendBufferPool.hpp"
-#include "SendBuffer.hpp"
+#include "network/NetworkPch.hpp"
+#include "network/SendBufferPool.hpp"
+#include "network/SendBuffer.hpp"
 
 namespace network
 {
@@ -75,7 +75,7 @@ namespace network
             _pool.pop();
         }
 
-        NC_LOG_DEBUG("SendBuffer Pool Clear");
+        EN_LOG_DEBUG("SendBuffer Pool Clear");
     }
 
     std::shared_ptr<SendBufferSegment> SendBufferArena::Allocate(int32 size)
@@ -84,7 +84,7 @@ namespace network
             SwapSendBuffer();
 
         BYTE* allocatedPtr = S_LCurrentSendBuffer->Allocate(size);
-        return MakeShared<SendBufferSegment>( allocatedPtr, allocatedPtr != nullptr, S_LCurrentSendBuffer );
+        return engine::MakeShared<SendBufferSegment>( allocatedPtr, allocatedPtr != nullptr, S_LCurrentSendBuffer );
     }
 
     int32 SendBufferArena::GetCurrentSendBufferRemainSize()
@@ -104,11 +104,13 @@ namespace network
 
     void SendBufferArena::ThreadSendBufferClear() 
     {
+		EN_LOG_INFO("Thread Send Buffer Clear");
         S_LCurrentSendBuffer.reset(); 
     }
 
     void SendBufferArena::SendBufferPoolClear() 
     { 
+		EN_LOG_INFO("Send Buffer Pool Clear");
         S_SendBufferPool->ReleaseSendBufferDeleter();
         S_SendBufferPool->PoolClear();
         S_SendBufferPool.reset(); 

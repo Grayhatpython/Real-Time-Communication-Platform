@@ -48,6 +48,11 @@
 #include "engine/CommonType.hpp"
 #include "engine/Logger.hpp"
 #include "engine/Lock.hpp"
+#include "engine/MemoryPool.hpp"
+
+#include "engine/GlobalContext.hpp"
+#include "engine/ThreadManager.hpp"
+#include "engine/ThreadLocal.hpp"
 
 #include "network/Types.hpp"
 #include "network/Enums.hpp"

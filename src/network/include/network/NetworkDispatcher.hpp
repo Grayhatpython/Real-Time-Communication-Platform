@@ -9,6 +9,7 @@ namespace network
         EventFd shutdownFd = INVALID_EVENT_FD_VALUE;
     };
 
+    class ISessionRegistry;
     class EpollDispatcher : public INetworkDispatcher
     {
         static constexpr size_t S_DEFALUT_EPOLL_EVENT_SIZE = 64;
@@ -69,11 +70,15 @@ namespace network
         void                    ConsumeEventSignal(EventFd coreEventFd);
 
     public:
-        EpollFd                 GetEpollFd() { return _epollFd; }
+        EpollFd                                 GetEpollFd() { return _epollFd; }
+        void									SetSessionRegistry(ISessionRegistry*  sessionRegistry) { _sessionRegistry = sessionRegistry; }
+		ISessionRegistry*  						GetSessionRegistry() { return _sessionRegistry; }
 
     private:
         EpollFd                         _epollFd = INVALID_EPOLL_FD_VALUE;
         std::vector<struct epoll_event> _epollEvents;
         CoreEvent                       _coreEvents;
+
+       ISessionRegistry*                _sessionRegistry = nullptr;
     };
 }

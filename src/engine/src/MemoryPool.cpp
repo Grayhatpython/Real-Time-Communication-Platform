@@ -1,3 +1,4 @@
+#include "engine/EnginePch.hpp"
 #include "engine/MemoryPool.hpp"
 
 namespace engine
@@ -50,7 +51,7 @@ namespace engine
 		const auto refillCount = std::min(S_MAX_CACHE_BLOCK_SIZE - bucket.count, count);
 
 		std::vector<void*> memoryBlocks;
-		GMemoryPool->AllocateFromMemoryPool(dataSize, refillCount, memoryBlocks);
+		GlobalContext::GetInstance().GetMemoryPool()->AllocateFromMemoryPool(dataSize, refillCount, memoryBlocks);
 
 		EN_LOG_DEBUG("RefillBlockCache");
 

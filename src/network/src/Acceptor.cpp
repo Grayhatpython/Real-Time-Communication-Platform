@@ -1,11 +1,11 @@
-#include "NetworkPch.hpp"
-#include "Acceptor.hpp"
-#include "NetworkCore.hpp"
-#include "NetworkUtils.hpp"
-#include "NetworkEvent.hpp"
-#include "NetworkDispatcher.hpp"
-#include "Session.hpp"
-#include "SessionManager.hpp"
+#include "network/NetworkPch.hpp"
+#include "network/Acceptor.hpp"
+#include "network/NetworkCore.hpp"
+#include "network/NetworkUtils.hpp"
+#include "network/NetworkEvent.hpp"
+#include "network/NetworkDispatcher.hpp"
+#include "network/Session.hpp"
+#include "network/SessionRegistry.hpp"
 
 namespace network
 {
@@ -74,7 +74,7 @@ namespace network
 		}	
 	}
 
-	void Acceptor::Dispatch(INetworkEvent* networkEvent)
+	void Acceptor::Dispatch(NetworkEvent* networkEvent)
 	{
 		if(networkEvent->GetNetworkEventType() == NetworkEventType::Accept)
 		{
@@ -118,7 +118,7 @@ namespace network
 			NetworkAddress remoteAddress(address);
 
             //  TODO
-			auto newSession = GSessionManager->CreateSession();
+			auto newSession = _sessionRegistry->CreateSession();
 			assert(newSession);
 
 			if(NetworkUtils::SetReuseAddress(clientSocketFd, true) == false)
@@ -134,20 +134,20 @@ namespace network
 
 			newSession->SetSocketFd(clientSocketFd);
 			newSession->SetRemoteAddress(remoteAddress);
-			
+
 			if (_networkDispatcher->Register(std::static_pointer_cast<INetworkObject>(newSession)) == false)
 			{
 				//	TODO
 				return;
 			}
 
-			GSessionManager->AddSession(newSession);
+			_sessionRegistry->AddSession(newSession);
 			newSession->ProcessConnect();
 		}
 
 		if(acceptEvent)
 		{
-			cdelete(acceptEvent);
+			engine::cdelete(acceptEvent);
 			acceptEvent = nullptr;
 		}
 	}

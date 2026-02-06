@@ -1,9 +1,9 @@
-#include "NetworkPch.hpp"
-#include "NetworkDispatcher.hpp"
-#include "NetworkUtils.hpp"
-#include "Session.hpp"
-#include "Acceptor.hpp"
-#include "SessionManager.hpp"
+#include "network/NetworkPch.hpp"
+#include "network/NetworkDispatcher.hpp"
+#include "network/NetworkUtils.hpp"
+#include "network/Session.hpp"
+#include "network/Acceptor.hpp"
+#include "network/SessionRegistry.hpp"
 
 namespace network
 {
@@ -50,7 +50,7 @@ namespace network
             _epollFd = INVALID_EPOLL_FD_VALUE;
         }
 
-        NC_LOG_INFO("Epoll Dispatcher Stopped");
+        EN_LOG_INFO("Epoll Dispatcher Stopped");
     }
 
     bool EpollDispatcher::RegisterShutdownFd()
@@ -130,7 +130,7 @@ namespace network
                 if(_epollEvents[i].data.fd == _coreEvents.removeSessionFd)
                 {
                     //  TODO
-                    GSessionManager->ProcessRemoveSessionEvent();
+                    _sessionRegistry->ProcessRemoveSessionEvent();
 
                     ConsumeEventSignal(CoreEventType::SessionRemove);
 
@@ -163,7 +163,7 @@ namespace network
                         if(acceptor)
                         {
                             //  TODO
-                            AcceptEvent* acceptEvent = cnew<AcceptEvent>();
+                            AcceptEvent* acceptEvent = engine::cnew<AcceptEvent>();
                             acceptor->Dispatch(acceptEvent);
                         }
                     }   
@@ -174,7 +174,7 @@ namespace network
                         if(session)
                         {
                             //  TODO
-                            RecvEvent* recvEvent = cnew<RecvEvent>();
+                            RecvEvent* recvEvent = engine::cnew<RecvEvent>();
                             session->Dispatch(recvEvent);
                         }
                     }
@@ -195,13 +195,13 @@ namespace network
                             if(session->GetState() == SessionState::ConnectPending)
                             {
                                 //  connect
-                                ConnectEvent *connectEvent = cnew<ConnectEvent>();
+                                ConnectEvent *connectEvent = engine::cnew<ConnectEvent>();
                                 session->Dispatch(connectEvent);
                             }
                             else
                             {
                                 //  send enable   
-                                SendEvent* sendEvent = cnew<SendEvent>();
+                                SendEvent* sendEvent = engine::cnew<SendEvent>();
                                 session->Dispatch(sendEvent);
                             }
                         }
@@ -233,7 +233,7 @@ namespace network
 
     void EpollDispatcher::PostRemoveSessionEvent(uint64 sessionId)
     {
-        GSessionManager->PushRemoveSessionEvent(sessionId);
+        _sessionRegistry->PushRemoveSessionEvent(sessionId);
 
         PostEventSignal(_coreEvents.removeSessionFd);
     }

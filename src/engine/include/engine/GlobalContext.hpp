@@ -4,7 +4,6 @@ namespace engine
 {
 	class MemoryPool;
 	class ThreadManager;
-	class SessionManager;
 	class GlobalContext
 	{
 	public:
@@ -27,17 +26,11 @@ namespace engine
 	public:
 		MemoryPool* 		GetMemoryPool() { return _memoryPool;}
 		ThreadManager* 		GetThreadPool() { return _threadManager;}
-		// SessionManager*		GetSessionManager() { return _sessionManager; }
-
 
 	private:
 		MemoryPool* 		_memoryPool = nullptr;
 		ThreadManager* 		_threadManager = nullptr;
-		// SessionManager* 	_sessionManager= nullptr;
 	};
 }
 
-#define GMemoryPool		engine::GlobalContext::GetInstance().GetMemoryPool()
-#define GThreadManager	engine::GlobalContext::GetInstance().GetThreadPool()
-// #define GSessionManager	engine::GlobalContext::GetInstance().GetSessionManager()
 

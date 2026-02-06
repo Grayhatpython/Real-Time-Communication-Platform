@@ -1,3 +1,4 @@
+#include "engine/EnginePch.hpp"
 #include "engine/Logger.hpp"
 
 #include <spdlog/async.h>

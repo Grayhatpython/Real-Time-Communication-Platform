@@ -87,6 +87,7 @@ namespace engine
 	public:
 		static void InitializeThreadLocal(const std::string& name);
 		static void DestroyThreadLocal();
+		static void RegisterDestroyThreadLocal(std::function<void(void)> destroyTLSCallback);
 
 		static void 		SetCurrentThreadName(const std::string& name);
 		static std::string 	GetCurrentThreadName();
@@ -101,6 +102,6 @@ namespace engine
 
 		std::vector<std::thread> 		_threadPool;
 		std::shared_ptr<TaskQueue> 		_taskQueue;
-		std::atomic<bool> 				_poolRunning = false;
+		std::atomic<bool>				_poolRunning = false;
 	};
 }

@@ -5,6 +5,8 @@ set(APP_NAME "gameclient")
 # 소스 파일과 헤더 파일을 변수에 담아 관리
 set(SOURCES
     src/main.cpp
+    src/SessionManager.cpp
+    src/ServerSession.cpp
 )
 
 set(HEADERS

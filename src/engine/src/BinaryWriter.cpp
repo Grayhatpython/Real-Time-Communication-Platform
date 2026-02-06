@@ -1,3 +1,4 @@
+#include "engine/EnginePch.hpp"
 #include "engine/BinaryWriter.hpp"
 
 namespace engine

@@ -6,24 +6,31 @@ namespace network
     class Session;
     class Acceptor;
     class SendContext;
-    class NetworkEvent : public INetworkEvent
+    class NetworkEvent
     {
     public:
         NetworkEvent(NetworkEventType type)
-            : INetworkEvent(type)
+            : _type(type)
         {
 
         }
-        virtual ~NetworkEvent() override
-        {
-
-        }
+        virtual ~NetworkEvent() = default;
 
     public:
         void Initialize()
         {
             _owner.reset();
         }
+
+    public:
+        NetworkEventType                    GetNetworkEventType() const { return _type; }
+        std::shared_ptr<INetworkObject>     GetOwner() { return _owner; }
+
+        void                                SetOwner(std::shared_ptr<INetworkObject> owner) { _owner = owner; }
+
+    protected:
+        NetworkEventType                    _type = NetworkEventType::None;
+        std::shared_ptr<INetworkObject>     _owner;
     };
 
     class ConnectEvent : public NetworkEvent

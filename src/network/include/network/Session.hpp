@@ -6,10 +6,9 @@
 
 namespace network
 {
-    class Session : public EpollObject
+    class Session : public IEpollObject
     {
         friend class Acceptor;
-        friend class Client;
 
     public:
         Session();
@@ -18,7 +17,7 @@ namespace network
     public:
 		virtual NetworkObjectType   GetNetworkObjectType() override { return NetworkObjectType::Session; }
         virtual SocketFd            GetSocketFd() const override { return _socketFd; }
-        virtual void                Dispatch(INetworkEvent* networkEvent) override;
+        virtual void                Dispatch(NetworkEvent* networkEvent) override;
 
     public:
         bool    Connect(NetworkAddress& targetNetworkAddress);
