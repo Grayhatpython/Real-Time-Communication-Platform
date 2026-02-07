@@ -25,7 +25,7 @@ namespace engine
 
 	public:
 		MemoryPool* 		GetMemoryPool() { return _memoryPool;}
-		ThreadManager* 		GetThreadPool() { return _threadManager;}
+		ThreadManager* 		GetThreadManager() { return _threadManager;}
 
 	private:
 		MemoryPool* 		_memoryPool = nullptr;

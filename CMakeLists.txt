@@ -1,8 +1,9 @@
-cmake_minimum_required(VERSION 3.10)
-project(CrossPlatformServer VERSION 1.0)
+cmake_minimum_required(VERSION 3.14)
+project(engine VERSION 1.0)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # --- 외부 라이브러리(GLFW) 가져오기 설정 ---
 # FetchContent 모듈을 포함

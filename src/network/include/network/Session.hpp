@@ -62,10 +62,11 @@ namespace network
 		NetworkAddress		GetRemoteAddress() const { return _remoteAddress; }
 
         SessionState		GetState() const { return _state.load(std::memory_order_acquire); }
+        void                SetSessionId(uint64 sessionId) { _sessionId = sessionId; }
 		uint64				GetSessionId() const { return _sessionId; }
 
+
     private:
-    	static std::atomic<uint64> S_GenerateSessionId;
 
         SocketFd                                    _socketFd = INVALID_SOCKET_FD_VALUE;
         NetworkAddress                              _remoteAddress{};

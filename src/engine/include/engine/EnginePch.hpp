@@ -16,6 +16,7 @@
 
 #include <mutex>
 #include <thread>
+#include <stop_token>
 #include <future>
 #include <condition_variable>
 
@@ -30,7 +31,7 @@
 
 // 타입 정의 헤더 파일 
 #include "CommonType.hpp"
-#include "ThreadLocal.hpp"
+#include "EngineTLS.hpp"
 #include "GlobalContext.hpp"
 #include "Logger.hpp"
 #include "MemoryPool.hpp"

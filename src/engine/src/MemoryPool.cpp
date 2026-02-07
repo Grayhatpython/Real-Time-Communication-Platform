@@ -65,6 +65,24 @@ namespace engine
 		}
 	}
 
+	void ThreadLocalCache::ThreadLocalCacheClear()
+	{
+		for (size_t i = 0; i < ThreadLocalCache::S_CACHE_BUCKET_SIZE; i++)
+		{
+			auto& bucket = _buckets[i];
+			for (size_t j = 0; j < bucket.count; j++)
+			{
+				if (bucket.blocks[j])
+				{
+					free(bucket.blocks[j]);
+					bucket.blocks[j] = nullptr;
+				}
+			}
+
+			bucket.count = 0;
+		}
+	}
+
 	size_t ThreadLocalCache::GetBucketIndexFromSize(size_t size)
 	{
 		//	S_MAX_BLOCK_SIZE 보다 커도 일단은 S_MAX_BLOCK_SIZE로 생성 문제있음
@@ -98,8 +116,8 @@ namespace engine
 	{
 		//	Main Thread TLS Cache 정리
 		// SendBufferArena::ThreadSendBufferClear();
-		ThreadLocalCacheClear();
-		EN_LOG_INFO("Main Thread TLS Cache Clear");
+		// ThreadLocalCacheClear();
+		// EN_LOG_INFO("Main Thread TLS Cache Clear");
 
 		//	Global Shared Memory 정리
 		// SendBufferArena::SendBufferPoolClear();
@@ -227,31 +245,6 @@ namespace engine
 		freeList.lists.push_back(memoryBlockHeader);
 	}
 
-	void MemoryPool::ThreadLocalCacheClear()
-	{
-		auto& threadLocalCache = GetThreadLocalCache();
-		for (size_t i = 0; i < ThreadLocalCache::S_CACHE_BUCKET_SIZE; i++)
-		{
-			auto& bucket = threadLocalCache._buckets[i];
-			for (size_t j = 0; j < bucket.count; j++)
-			{
-				if (bucket.blocks[j])
-				{
-					free(bucket.blocks[j]);
-					bucket.blocks[j] = nullptr;
-				}
-			}
-
-			bucket.count = 0;
-		}
-	}
-
-	ThreadLocalCache& MemoryPool::GetThreadLocalCache()
-	{
-		thread_local ThreadLocalCache LThreadLocalCache;
-		return LThreadLocalCache;
-	}
-
 	size_t MemoryPool::GetBucketIndexFromThreadLocalCache(size_t size)
 	{
 		return ThreadLocalCache::GetBucketIndexFromSize(size);
@@ -261,15 +254,14 @@ namespace engine
 	{
 		size_t totalSize = dataSize + sizeof(MemoryBlockHeader);
 
-		auto& threadLocalCache = GetThreadLocalCache();
-		void* memory = threadLocalCache.Allocate(dataSize);
+		void* memory = LThreadLocalCache->Allocate(dataSize);
 
 		if (memory == nullptr)
 		{
 			auto bucketIndex = GetBucketIndexFromThreadLocalCache(totalSize);
-			threadLocalCache.RefillBlockCache(bucketIndex, dataSize, S_REFILL_BLOCK_CACHE_COUNT);
+			LThreadLocalCache->RefillBlockCache(bucketIndex, dataSize, S_REFILL_BLOCK_CACHE_COUNT);
 
-			memory = threadLocalCache.Allocate(dataSize);
+			memory = LThreadLocalCache->Allocate(dataSize);
 
 			if (memory == nullptr)
 				memory = AllocateNewMemory(dataSize);
@@ -283,11 +275,9 @@ namespace engine
 		if (memory == nullptr)
 			return;
 
-		auto& threadLocalCache = GetThreadLocalCache();
-
 		MemoryBlockHeader* memoryBlockHeader = MemoryBlockHeader::GetHeaderPos(memory);
 
-		if (threadLocalCache.Deallocate(memoryBlockHeader) == false)
+		if (LThreadLocalCache->Deallocate(memoryBlockHeader) == false)
 			DeallocateToMemoryPool(memoryBlockHeader);
 	}
 

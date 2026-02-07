@@ -7,11 +7,9 @@
 
 namespace network
 {
-	std::atomic<uint64> Session::S_GenerateSessionId = 1;
 
 	Session::Session()
 	{
-		_sessionId = S_GenerateSessionId.fetch_add(1);
 	}
 
 	Session::~Session()

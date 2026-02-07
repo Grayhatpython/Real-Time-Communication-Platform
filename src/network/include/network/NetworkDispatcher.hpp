@@ -3,16 +3,11 @@
 
 namespace network
 {
-    struct CoreEvent
-    {
-        EventFd removeSessionFd = INVALID_EVENT_FD_VALUE;
-        EventFd shutdownFd = INVALID_EVENT_FD_VALUE;
-    };
 
-    class ISessionRegistry;
+    class SessionRegistry;
     class EpollDispatcher : public INetworkDispatcher
     {
-        static constexpr size_t S_DEFALUT_EPOLL_EVENT_SIZE = 64;
+        static constexpr size_t S_DEFALUT_EPOLL_EVENT_SIZE = 128;
 
     public:
         EpollDispatcher();
@@ -21,32 +16,14 @@ namespace network
     public:
         bool Initialize();
         void Stop();
+        void Run(std::stop_token st);
         
     private:
-        bool RegisterShutdownFd();
-        bool RegisterRemoveSessionFd();
+        bool RegisterWakeupFd();
 
     public:
         virtual bool            Register(std::shared_ptr<INetworkObject> networkObject) override;
         virtual DispatchResult  Dispatch(uint32 timeoutMs = TIMEOUT_INFINITE) override;
-        
-        /*
-        template<typename... Args>
-        void                    PostEventSignal(CoreEventType type, Args&&... args)
-        {
-            switch (type)
-            {
-            case CoreEventType::CoreShutdown:
-                PostRemoveSessionEvent(_coreEvents.shutdownFd, std::forward<Args>(args)...);
-                break;
-            case CoreEventType::SessionRemove:
-                PostCoreShutdown(_coreEvents.removeSessionFd);
-                break;
-            default:
-                break;
-            }
-        }
-        */
        
         bool                    EnableConnectEvent(std::shared_ptr<INetworkObject> networkObject);
         bool                    DisableConnectEvent(std::shared_ptr<INetworkObject> networkObject);
@@ -59,26 +36,30 @@ namespace network
         bool                    DisableEvent(const std::shared_ptr<INetworkObject>& networkObject);
         
     public:
-        void                    PostRemoveSessionEvent(uint64 sessionId);
-        void                    PostCoreShutdown();
-        
+        void                    PostWakeup();
+
     private:
         void                    PostEventSignal(EventFd coreEventFd);
 
-    private:
-        void                    ConsumeEventSignal(CoreEventType type);                   
+    private:               
         void                    ConsumeEventSignal(EventFd coreEventFd);
 
     public:
         EpollFd                                 GetEpollFd() { return _epollFd; }
-        void									SetSessionRegistry(ISessionRegistry*  sessionRegistry) { _sessionRegistry = sessionRegistry; }
-		ISessionRegistry*  						GetSessionRegistry() { return _sessionRegistry; }
+        void									SetSessionRegistry(SessionRegistry*  sessionRegistry) { _sessionRegistry = sessionRegistry; }
+		SessionRegistry*  						GetSessionRegistry() { return _sessionRegistry; }
+
+        void                                    SetShardId(int32 shardId) { _shardId = shardId; }
+        int32                                   GetShardId() const { return _shardId; }
 
     private:
         EpollFd                         _epollFd = INVALID_EPOLL_FD_VALUE;
         std::vector<struct epoll_event> _epollEvents;
-        CoreEvent                       _coreEvents;
+        EventFd                         _wakeupFd = INVALID_EVENT_FD_VALUE;
 
-       ISessionRegistry*                _sessionRegistry = nullptr;
+        int32                           _shardId = 0;
+
+        SessionRegistry*                _sessionRegistry = nullptr;
+        std::atomic<bool>               _running{true};
     };
 }

@@ -6,6 +6,7 @@
 #include "network/NetworkDispatcher.hpp"
 #include "network/SessionRegistry.hpp"
 #include "network/SendBufferPool.hpp"
+#include "network/NetworkCore.hpp"
 
 namespace network
 {
@@ -22,73 +23,34 @@ namespace network
 
     void NetworkCore::Stop()
     {
-        //  스레드 종료 시그널 -> 스레드 작업 마무리
-        engine::GlobalContext::GetInstance().GetThreadPool()->Stop();
-
-        _isRunning.store(false, std::memory_order_release);
-    
-        // shutdown 시그널 -> epoll 이벤트 작업 종료
-        auto epollDispatcher = std::static_pointer_cast<EpollDispatcher>(_networkDispatcher);
-        epollDispatcher->PostCoreShutdown();
-
-        //  Network Dispatch Thread 종료            
-        if(_dispatchThread.joinable() == true)
-            _dispatchThread.join();
-
-        // 연결된 Session Socket Close 및 epoll 등록 해제
-        _sessionRegistry->Clear();
-
-        // core Event에 사용된 eventfd 및 epollfd 삭제
-        epollDispatcher->Stop();
-     
-        // 할당된 메모리 정리 ( 메모리풀 )
-        engine::GlobalContext::GetInstance().Clear();
-   
+  
     }
 
-    void NetworkCore::NetworkDispatch()
-    { 
-        _dispatchThread = std::move(std::thread([=](){
-
-            engine::ThreadManager::InitializeThreadLocal("NetworkDispatch");
-
-            EN_LOG_INFO("Thread Started");
-
-            while (_isRunning.load(std::memory_order_acquire) == true)
+    std::function<void(std::stop_token)> NetworkCore::MakeDispatchTask()
+    {
+        return [this](std::stop_token st) {
+            auto epollDispatcher = std::static_pointer_cast<EpollDispatcher>(_networkDispatcher);
+            
+            if(epollDispatcher)
             {
-                auto dispatchResult = _networkDispatcher->Dispatch();
-
-                //  TODO
-                if(dispatchResult == DispatchResult::InvalidDispatcher || 
-                    dispatchResult == DispatchResult::ExitRequested)
-                {
-                    
-                }         
+                epollDispatcher->Run(st);
             }
+        };
+    }
 
-            auto destroyTLSCallback = [](){
-                SendBufferArena::ThreadSendBufferClear();
-            };
-
-            engine::ThreadManager::RegisterDestroyThreadLocal(destroyTLSCallback);
-            engine::ThreadManager::DestroyThreadLocal();
-
-            EN_LOG_INFO("Thread finished");
-
-        }));
+    void NetworkCore::StopDispatchTask()
+    {
+        auto epollDispatcher = std::static_pointer_cast<EpollDispatcher>(_networkDispatcher);
+        
+        if(epollDispatcher)
+        {
+            epollDispatcher->Stop();
+        }
     }
 
     void NetworkCore::Initialize()
     {
         NetworkUtils::Initialize();
-        engine::GlobalContext::GetInstance().Initialize();
-
-        auto destroyTLSCallback = [](){
-            SendBufferArena::ThreadSendBufferClear();
-            SendBufferArena::SendBufferPoolClear();
-        };
-
-        engine::GlobalContext::GetInstance().GetThreadPool()->RegisterDestroyThreadLocal(destroyTLSCallback);
 
         {
             _networkDispatcher = std::make_shared<EpollDispatcher>();
@@ -99,8 +61,6 @@ namespace network
                 epollDispatcher->Initialize();
             }
         }
-
-        EN_LOG_INFO("Network Core Initialized");
     }
 
     Server::Server(ISessionRegistry*  sessionRegistry)
@@ -141,21 +101,20 @@ namespace network
     
         EN_LOG_INFO("Server port:{} Started", _port);
 
-        NetworkDispatch();
         return true;
     }
 
-    void Server::Stop()
+    void Server::StopDispatchTask()
     {
         if(_isRunning.load(std::memory_order_acquire) == false)
             return;
         
         EN_LOG_INFO("Server Stopping");
-
+            
         if(_acceptor)
             _acceptor->Stop();
 
-        NetworkCore::Stop();
+        NetworkCore::StopDispatchTask();
 
         EN_LOG_INFO("Server Stopped");
     }
@@ -215,19 +174,17 @@ namespace network
 
         _isRunning.store(true, std::memory_order_release);
 
-        NetworkDispatch();
-
         return true;
     }
 
-    void Client::Stop()
+    void Client::StopDispatchTask()
     {
         if(_isRunning.load(std::memory_order_acquire) == false)
             return;
 
         EN_LOG_INFO("Client Stopping");
 
-        NetworkCore::Stop();
+        NetworkCore::StopDispatchTask();
 
         EN_LOG_INFO("Client Stopped");
     }

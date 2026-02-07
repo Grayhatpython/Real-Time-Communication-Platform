@@ -19,18 +19,16 @@ namespace network
 
     public:
         virtual void Stop();
-    
-    protected:
-        void NetworkDispatch();
+        std::function<void(std::stop_token)> MakeDispatchTask();
+        virtual void StopDispatchTask();
 
-    private:
+
         void Initialize();
 
     protected:
         std::shared_ptr<INetworkDispatcher>             _networkDispatcher;
         ISessionRegistry*                               _sessionRegistry = nullptr;
 
-        std::thread                                     _dispatchThread;
 
         std::mutex                                      _mutex;
         std::condition_variable                         _cv;
@@ -48,7 +46,7 @@ namespace network
 
     public:
         bool Start(uint16 port);
-        virtual void Stop() override;
+        virtual void StopDispatchTask() override;
 
     private:
         NetworkAddress						_listenNetworkAddress;
@@ -64,7 +62,7 @@ namespace network
 
     public:
         bool Connect(NetworkAddress& targetAddress, int32 connectionCount = 1);
-        virtual void Stop() override;
+        virtual void StopDispatchTask() override;
 
     private:
 

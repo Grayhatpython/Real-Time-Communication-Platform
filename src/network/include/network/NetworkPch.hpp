@@ -52,7 +52,6 @@
 
 #include "engine/GlobalContext.hpp"
 #include "engine/ThreadManager.hpp"
-#include "engine/ThreadLocal.hpp"
 
 #include "network/Types.hpp"
 #include "network/Enums.hpp"

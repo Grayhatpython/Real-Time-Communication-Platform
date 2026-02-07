@@ -52,6 +52,7 @@ namespace engine
 		void*	Allocate(size_t size);
 		bool	Deallocate(MemoryBlockHeader* memoryBlockHeader);
 		void	RefillBlockCache(size_t bucketIndex, size_t dataSize, size_t count);
+		void 	ThreadLocalCacheClear();	
 
 	private:
 		static size_t GetBucketIndexFromSize(size_t size);
@@ -95,13 +96,7 @@ namespace engine
 		void	AllocateFromMemoryPool(size_t dataSize, size_t refillCount, std::vector<void*>& memoryBlocks);
 		void	DeallocateToMemoryPool(void* memory);
 
-	public:
-		static void ThreadLocalCacheClear();
-
-	public:
-		static ThreadLocalCache& GetThreadLocalCache();
 		static size_t GetBucketIndexFromThreadLocalCache(size_t size);
-
 
 	private:
 		void*	AllocateInternal(size_t dataSize);

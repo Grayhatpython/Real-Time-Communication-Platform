@@ -150,179 +150,99 @@ namespace engine
 		return _tasks.size();
 	}
 
-	ThreadManager::ThreadManager(int32 threadCount)
+	ThreadManager::ThreadManager()
 	{
-		_taskQueue = std::make_shared<TaskQueue>();
-
-		InitializeThreadLocal("Main");
-
-		if (threadCount > 0)
-			InitializeThreadPool();
+		//	TEMP
+		engine::InitializeLThreadState(100, "Main");
+		engine::InitializeLThreadLocalCache();
 	}
 
 	ThreadManager::~ThreadManager()
 	{
-
+		engine::DestroyLThreadLocalCache();
+		engine::DestroyLThreadState();
 	}
 
-	void ThreadManager::Launch(std::function<void()> callback, const std::string& threadName,  bool repeated)
+	void ThreadManager::RegisterExitCallback(ThreadRole mask, ExitCallback callback, std::string name)
 	{
-		if (_stopped.load(std::memory_order_acquire) == true)
-			return;
-
 		std::lock_guard<std::mutex> lock(_lock);
-
-		_threads.push_back(std::thread([this, callback, threadName, repeated]() {
-			
-			InitializeThreadLocal(threadName);
-
-            EN_LOG_INFO("Thread Started");
-
-			if(repeated == true)
-			{
-				while(_stopped.load(std::memory_order_acquire) == false)
-					callback();
-			}
-			else
-				callback();
-
-			DestroyThreadLocal();
-
-			EN_LOG_INFO("Thread finished");
-		}));
+        _callbackEntrys.push_back(CallbackEntry{ mask, std::move(callback), std::move(name) });
 	}
 
-	void ThreadManager::Join()
-	{
-		for (std::thread& thread : _threads)
-		{
-			if (thread.joinable())
-				thread.join();
-		}
-		_threads.clear();
-
-		EN_LOG_INFO("Threads Join finished");
-	}
-
-	void ThreadManager::Stop()
-	{
-		EN_LOG_INFO("ThreadManager Stopping");
-
-		_stopped.store(true, std::memory_order_release);
-
-		Join();
-
-		//	Thread Pool은 아직...
-		ShutdownThreadPool();
-
-		//	Main Thread
-		DestroyThreadLocal();
-
-		EN_LOG_INFO("ThreadManager Stopped");
-	}
-
-	void ThreadManager::InitializeThreadPool(int32 threadCount)
-	{
-		if (_poolRunning.load(std::memory_order_acquire) == true)
-			return;
-
-		if (threadCount <= 0)
-			threadCount = std::thread::hardware_concurrency();
-
-		_poolRunning.store(true, std::memory_order_release);
-
-		for (int32 i = 0; i < threadCount; i++)
-		{
-			_threadPool.push_back(std::thread([this, i]() {
-					WorkerThread();
-				}));
-		}
-	}
-
-	void ThreadManager::ShutdownThreadPool()
-	{
-		_poolRunning.store(true, std::memory_order_release);
-		_taskQueue->Shutdown();
-
-		for (auto& thread : _threadPool)
-		{
-			if (thread.joinable())
-				thread.join();
-		}
-
-		_threadPool.clear();
-	}
-
-	std::shared_ptr<Task> ThreadManager::PushTask(std::function<void(void)> func, const std::string& name)
-	{
-		auto task = std::make_shared<Task>(func, name);
-		_taskQueue->Push(task);
-		return task;
-	}
-
-	void ThreadManager::InitializeThreadLocal(const std::string& name)
-	{
-		SetCurrentThreadName(name);
-
-		static std::atomic<uint32> S_autoIncreaseThreadId = 1;
-		LThreadId = S_autoIncreaseThreadId.fetch_add(1);
-
-		EN_LOG_INFO("Initialize Thread Local");
-	}
-
-	void ThreadManager::DestroyThreadLocal()
-	{
-		//	각 Thread별로 TLS 영역에 할당된 SendBuffer 정리 
-		// SendBufferArena::ThreadSendBufferClear();
-
-		LDestroyTLSCallback();
-
-		//	MemoryPool에서 각 Thread별로 TLS 영역에 할당된 freeList Memory 정리
-		GlobalContext::GetInstance().GetMemoryPool()->ThreadLocalCacheClear();
-		EN_LOG_INFO("Thread Local Cache Clear");
-
-		EN_LOG_INFO("Destroy Thread Local");
-	}
-
-	void ThreadManager::RegisterDestroyThreadLocal(std::function<void(void)> destroyTLSCallback)
-	{
-		if(destroyTLSCallback)
-		{
-			LDestroyTLSCallback = std::move(destroyTLSCallback);
-		}
-	}
-
-    void ThreadManager::SetCurrentThreadName(const std::string &name)
-  	{
-		LThreadName = name;
-    	::pthread_setname_np(pthread_self(), name.c_str());
-	}
-
-    std::string ThreadManager::GetCurrentThreadName()
+    ThreadManager::ThreadHandle ThreadManager::Spawn(std::string name, ThreadRole role, ThreadFunc func)
     {
-		char name[16];
-		if (pthread_getname_np(pthread_self(), name, sizeof(name)) == 0) 
-		{
-			return std::string(name);
-		}
-		return "Unknown";
+		const size_t id = _threads.size();
+
+		_threads.push_back(ManagedThread{});
+		ManagedThread& managedThread = _threads.back();
+		managedThread.name = name;
+		managedThread.role = role;
+
+		managedThread.thread = std::jthread([this, id, fn = std::move(func), name, role](std::stop_token st) mutable {
+			engine::InitializeLThreadState(id, name);
+			engine::InitializeLThreadLocalCache();
+
+			EN_LOG_INFO("Thread Spawn");
+
+			fn(st);
+
+			RunExitCallback(role);
+
+			EN_LOG_INFO("Thread Desawn");
+			
+			engine::DestroyLThreadLocalCache();
+			engine::DestroyLThreadState();
+		});
+
+        return ThreadHandle{id};
     }
 
-    void ThreadManager::WorkerThread()
-	{
-		InitializeThreadLocal("WortherThread");
+    void ThreadManager::RequestStop(ThreadHandle handle)
+    {
+		if (handle.id >= _threads.size()) 
+			return;
 
-		EN_LOG_INFO("ThreadPool Started");
+		_threads[handle.id].thread.request_stop();
+    }
 
-		while (_poolRunning.load(std::memory_order_acquire) == true)
+    void ThreadManager::Join(ThreadHandle handle)
+    {
+     	if (handle.id >= _threads.size()) 
+			return;
+
+        auto& thread = _threads[handle.id].thread;
+        if (thread.joinable()) 
+			thread.join();
+    }
+
+    void ThreadManager::StopAllAndJoin()
+    {
+		for (auto& managedThread : _threads)
+            managedThread.thread.request_stop();
+
+        for (auto& managedThread : _threads)
 		{
-			auto task = _taskQueue->Pop();
-			if (task)
-				task->Execute();
+            if (managedThread.thread.joinable()) 
+				managedThread.thread.join();
 		}
 
-		DestroyThreadLocal();
+        _threads.clear();
+    }
 
-		EN_LOG_INFO("ThreadPool finished");
-	}
+    void ThreadManager::RunExitCallback(ThreadRole role)
+    {
+		std::vector<CallbackEntry> callbackEntrys;
+		{
+			std::lock_guard<std::mutex> lock(_lock);
+			callbackEntrys = _callbackEntrys;
+		}
+
+		for(auto& entry : callbackEntrys)
+		{
+			if(HasRole(entry.mask, role) == false && entry.mask != ThreadRole::None)
+				continue;
+
+			entry.callback();
+		}
+    }
 }

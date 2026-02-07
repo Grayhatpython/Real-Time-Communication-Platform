@@ -1,4 +1,5 @@
 #pragma once
+#include "EngineTLS.hpp"
 
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/fmt.h>
@@ -29,9 +30,9 @@ namespace engine
     };
 }
 
-#define EN_LOG_TRACE(...)    engine::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::trace,     engine::LThreadName , __VA_ARGS__)
-#define EN_LOG_DEBUG(...)    engine::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::debug,     engine::LThreadName , __VA_ARGS__)
-#define EN_LOG_INFO(...)     engine::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::info,      engine::LThreadName , __VA_ARGS__)
-#define EN_LOG_WARN(...)     engine::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::warn,      engine::LThreadName , __VA_ARGS__)
-#define EN_LOG_ERROR(...)    engine::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::err,       engine::LThreadName , __VA_ARGS__)
-#define EN_LOG_CRITICAL(...) engine::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::critical,  engine::LThreadName , __VA_ARGS__)
+#define EN_LOG_TRACE(...)    engine::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::trace,     engine::LthreadState->threadName , __VA_ARGS__)
+#define EN_LOG_DEBUG(...)    engine::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::debug,     engine::LthreadState->threadName , __VA_ARGS__)
+#define EN_LOG_INFO(...)     engine::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::info,      engine::LthreadState->threadName , __VA_ARGS__)
+#define EN_LOG_WARN(...)     engine::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::warn,      engine::LthreadState->threadName , __VA_ARGS__)
+#define EN_LOG_ERROR(...)    engine::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::err,       engine::LthreadState->threadName , __VA_ARGS__)
+#define EN_LOG_CRITICAL(...) engine::Logger::Log(spdlog::source_loc{__FILE__, __LINE__, __PRETTY_FUNCTION__}, spdlog::level::critical,  engine::LthreadState->threadName , __VA_ARGS__)

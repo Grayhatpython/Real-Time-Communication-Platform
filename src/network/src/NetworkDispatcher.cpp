@@ -4,6 +4,7 @@
 #include "network/Session.hpp"
 #include "network/Acceptor.hpp"
 #include "network/SessionRegistry.hpp"
+#include "network/NetworkDispatcher.hpp"
 
 namespace network
 {
@@ -13,75 +14,56 @@ namespace network
     
     EpollDispatcher::~EpollDispatcher() 
     {
-      
+     
     }
 
     bool EpollDispatcher::Initialize()
     {
-        _epollFd = ::epoll_create1(0);
+        _epollFd = ::epoll_create1(EPOLL_CLOEXEC);
         if(_epollFd == INVALID_EPOLL_FD_VALUE)
             return false;
 
-        if(RegisterShutdownFd() == false || RegisterRemoveSessionFd() == false)
+        if(RegisterWakeupFd() == false)
             return false;
 
         _epollEvents.resize(S_DEFALUT_EPOLL_EVENT_SIZE);
+        
+        _sessionRegistry->SetShardWakeup(_shardId, [this](){
+            this->PostWakeup();
+        });
 
         return true;
     }
 
     void EpollDispatcher::Stop()
     {
-        if(_coreEvents.shutdownFd != INVALID_EVENT_FD_VALUE)
-        {
-            ::close(_coreEvents.shutdownFd);
-            _coreEvents.shutdownFd = INVALID_EVENT_FD_VALUE;
-        }
+        _running.store(false, std::memory_order_release);
 
-        if(_coreEvents.removeSessionFd != INVALID_EVENT_FD_VALUE)
-        {
-            ::close(_coreEvents.removeSessionFd);
-            _coreEvents.removeSessionFd = INVALID_EVENT_FD_VALUE;
-        }
-
-        if(_epollFd != INVALID_EPOLL_FD_VALUE)
-        {
-            ::close(_epollFd);
-            _epollFd = INVALID_EPOLL_FD_VALUE;
-        }
+        PostWakeup();
 
         EN_LOG_INFO("Epoll Dispatcher Stopped");
     }
 
-    bool EpollDispatcher::RegisterShutdownFd()
+    void EpollDispatcher::Run(std::stop_token st)
     {
-        _coreEvents.shutdownFd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
-        if (_coreEvents.shutdownFd == RESULT_ERROR) 
-            return false;
-
-        epoll_event epollEvent{};
-        // counter > 0 이면 readable
-        epollEvent.events = EPOLLIN;                 
-        epollEvent.data.fd = _coreEvents.shutdownFd;
-
-        if(::epoll_ctl(_epollFd, EPOLL_CTL_ADD,_coreEvents.shutdownFd , &epollEvent) == RESULT_ERROR)
-            return false;
-
-        return true;
+        while (_running.load(std::memory_order_acquire) && st.stop_requested() == false)
+        {
+            Dispatch();
+        }
     }
 
-    bool EpollDispatcher::RegisterRemoveSessionFd()
+    bool EpollDispatcher::RegisterWakeupFd()
     {
-        _coreEvents.removeSessionFd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
-        if (_coreEvents.removeSessionFd == RESULT_ERROR) 
+        _wakeupFd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+        if (_wakeupFd == INVALID_EVENT_FD_VALUE) 
             return false;
 
         epoll_event epollEvent{};
         // counter > 0 이면 readable
-        epollEvent.events = EPOLLIN;                 
-        epollEvent.data.fd = _coreEvents.removeSessionFd;
+        epollEvent.events = EPOLLIN;                  
+        epollEvent.data.fd = _wakeupFd;
 
-        if(::epoll_ctl(_epollFd, EPOLL_CTL_ADD,_coreEvents.removeSessionFd , &epollEvent) == RESULT_ERROR)
+        if(::epoll_ctl(_epollFd, EPOLL_CTL_ADD, _wakeupFd, &epollEvent) == RESULT_ERROR)
             return false;
 
         return true;
@@ -89,13 +71,22 @@ namespace network
 
     bool EpollDispatcher::Register(std::shared_ptr<INetworkObject> networkObject)
     {
+        uint64 sessionId = 0;
+
         if(networkObject == nullptr)
             return false;
 
-        //  networkobject ( Session , Acceptor ) Event 등록
         struct epoll_event epollEv;
         epollEv.events = EPOLLIN | EPOLLET | EPOLLERR | EPOLLHUP;
         epollEv.data.ptr = networkObject.get();
+
+        //  현재는 Session 타입만 와서 필요없긴한데..
+        if(networkObject->GetNetworkObjectType() == NetworkObjectType::Session)
+        {   
+            auto session = std::static_pointer_cast<Session>(networkObject);
+            sessionId = session->GetSessionId();    
+            epollEv.data.u64 = sessionId;
+        }
 
         if(::epoll_ctl(_epollFd, EPOLL_CTL_ADD, networkObject->GetSocketFd(), &epollEv) == RESULT_ERROR)
             return false;
@@ -119,24 +110,17 @@ namespace network
         if(numOfEvents > 0)
         {
             for(int32 i = 0 ; i < numOfEvents; i++)
-            {
-                if(_epollEvents[i].data.fd == _coreEvents.shutdownFd)
+            {         
+                if(_epollEvents[i].data.fd == _wakeupFd)
                 {
-                    ConsumeEventSignal(CoreEventType::CoreShutdown);
+                    ConsumeEventSignal(_wakeupFd);
+
+                    //  TODO
+                    _sessionRegistry->ExecuteCommands(_shardId, *this);
 
                     return DispatchResult::ExitRequested;
                 }
-                
-                if(_epollEvents[i].data.fd == _coreEvents.removeSessionFd)
-                {
-                    //  TODO
-                    _sessionRegistry->ProcessRemoveSessionEvent();
-
-                    ConsumeEventSignal(CoreEventType::SessionRemove);
-
-                    return DispatchResult::CoreEventDispatched;
-                }
-
+     
                 auto networkObject = static_cast<INetworkObject*>(_epollEvents[i].data.ptr);
 
                 //  ??
@@ -156,18 +140,7 @@ namespace network
                 //  Read Event
                 if((events & EPOLLIN) != 0)
                 {
-                    if(networkObjectType == NetworkObjectType::Acceptor)
-                    {
-                        auto acceptor = static_cast<Acceptor*>(networkObject);
-
-                        if(acceptor)
-                        {
-                            //  TODO
-                            AcceptEvent* acceptEvent = engine::cnew<AcceptEvent>();
-                            acceptor->Dispatch(acceptEvent);
-                        }
-                    }   
-                    else if(networkObjectType == NetworkObjectType::Session)
+                    if(networkObjectType == NetworkObjectType::Session)
                     {
                         auto session = static_cast<Session*>(networkObject);
 
@@ -231,31 +204,9 @@ namespace network
         }
     }
 
-    void EpollDispatcher::PostRemoveSessionEvent(uint64 sessionId)
+    void EpollDispatcher::PostWakeup()
     {
-        _sessionRegistry->PushRemoveSessionEvent(sessionId);
-
-        PostEventSignal(_coreEvents.removeSessionFd);
-    }
-
-    void EpollDispatcher::PostCoreShutdown()
-    {
-        PostEventSignal(_coreEvents.shutdownFd);
-    }
-
-    void EpollDispatcher::ConsumeEventSignal(CoreEventType type)
-    {
-        switch (type)
-        {
-        case CoreEventType::CoreShutdown:
-            ConsumeEventSignal(_coreEvents.shutdownFd);
-            break;
-        case CoreEventType::SessionRemove:
-            ConsumeEventSignal(_coreEvents.removeSessionFd);
-            break;
-        default:
-            break;
-        }
+        PostEventSignal(_wakeupFd);
     }
 
     void EpollDispatcher::ConsumeEventSignal(EventFd coreEventFd)

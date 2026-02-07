@@ -1,4 +1,5 @@
 #pragma once
+#include "ThreadRole.hpp"
 
 namespace engine
 {
@@ -65,43 +66,51 @@ namespace engine
 	using Event = Task;
 	using EventQueue = TaskQueue;
 
-
 	class ThreadManager
 	{
 	public:
-		ThreadManager(int32 threadCount = 0);
+		ThreadManager();
 		~ThreadManager();
+		
+	public:
+		using ExitCallback = std::function<void()>;
+    	using ThreadFunc = std::function<void(std::stop_token)>;
+
+		struct CallbackEntry
+		{
+			ThreadRole mask;
+			ExitCallback callback;
+			std::string name;
+		};
+
+		struct ThreadHandle
+		{
+			size_t id = static_cast<size_t>(-1);
+		};
 
 	public:
-		void Launch(std::function<void()> callback, const std::string& threadName = "", bool repeated = false);
-		void Join();
-		void Stop();
+		void RegisterExitCallback(ThreadRole mask, ExitCallback callback, std::string name = {});
+  		ThreadHandle Spawn(std::string name, ThreadRole role, ThreadFunc func);
 
 	public:
-		void InitializeThreadPool(int32 threadCount = 0);
-		void ShutdownThreadPool();
-
-		//	Push Task No return Value
-		std::shared_ptr<Task> PushTask(std::function<void(void)> func, const std::string& name);
-
-	public:
-		static void InitializeThreadLocal(const std::string& name);
-		static void DestroyThreadLocal();
-		static void RegisterDestroyThreadLocal(std::function<void(void)> destroyTLSCallback);
-
-		static void 		SetCurrentThreadName(const std::string& name);
-		static std::string 	GetCurrentThreadName();
+		void RequestStop(ThreadHandle handle); 
+		void Join(ThreadHandle handle);
+		void StopAllAndJoin();
 
 	private:
-		void WorkerThread();
+		struct ManagedThread
+		{
+			std::string name;
+			ThreadRole role = ThreadRole::None;
+			std::jthread thread;
+		};
+
+		void RunExitCallback(ThreadRole role);
 
 	private:
-		std::mutex _lock;
-		std::vector<std::thread> _threads;
-		std::atomic<bool> _stopped = false;
+	 	std::mutex 					_lock;
+    	std::vector<CallbackEntry> 	_callbackEntrys;
 
-		std::vector<std::thread> 		_threadPool;
-		std::shared_ptr<TaskQueue> 		_taskQueue;
-		std::atomic<bool>				_poolRunning = false;
+    	std::vector<ManagedThread> _threads;
 	};
 }

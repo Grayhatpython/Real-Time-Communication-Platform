@@ -110,7 +110,6 @@ namespace network
 
     void SendBufferArena::SendBufferPoolClear() 
     { 
-		EN_LOG_INFO("Send Buffer Pool Clear");
         S_SendBufferPool->ReleaseSendBufferDeleter();
         S_SendBufferPool->PoolClear();
         S_SendBufferPool.reset(); 

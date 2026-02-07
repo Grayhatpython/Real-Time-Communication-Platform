@@ -27,10 +27,10 @@ namespace engine
 
 	private:
 	    // owner thread id (0=free)
-		alignas(CACHE_LINE_SIZE) std::atomic<uint32> _ownerThreadId{EMPTY_OWNER_THREAD_ID};
+		alignas(CACHE_LINE_SIZE) std::atomic<uint64> _ownerThreadId{EMPTY_OWNER_THREAD_ID};
 
 		// 재진입 횟수 (owner만 수정)
-		std::atomic<uint32> _recursion{0};
+		std::atomic<uint64> _recursion{0};
 
 		// 경쟁 완화용 mutex
 		pthread_mutex_t _mutex{};

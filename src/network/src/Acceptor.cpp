@@ -9,17 +9,16 @@
 
 namespace network
 {
+
 	Acceptor::Acceptor()
 	{
-
 	}
 
-	Acceptor::~Acceptor() 
+	Acceptor::~Acceptor()
 	{
-
 	}
 
-	bool Acceptor::Start(uint16 port, int32 backlog)
+	bool Acceptor::Initialize(uint16 port, int32 backlog)
 	{
 		if (_listenSocketFd != INVALID_SOCKET_FD_VALUE)
 			return false;
@@ -28,12 +27,6 @@ namespace network
 		_listenSocketFd = NetworkUtils::CreateSocketFd(true);
 		if (_listenSocketFd == INVALID_SOCKET_FD_VALUE)
 		{
-			return false;
-		}
-
-		if (_networkDispatcher->Register(shared_from_this()) == false)
-		{
-			NetworkUtils::CloseSocketFd(_listenSocketFd);
 			return false;
 		}
 
@@ -55,100 +48,169 @@ namespace network
 			return false;
 		}
 
+		_epollFd = ::epoll_create1(EPOLL_CLOEXEC);
+		if (_epollFd == INVALID_EPOLL_FD_VALUE)
+			return false;
+
+		_wakeupFd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+		if (_wakeupFd == INVALID_EVENT_FD_VALUE)
+			return false;
+
+		epoll_event listen{};
+		listen.events = EPOLLIN;
+		listen.data.fd = _listenSocketFd;
+		if (::epoll_ctl(_epollFd, EPOLL_CTL_ADD, _listenSocketFd, &listen) == RESULT_ERROR)
+			return false;
+
+		epoll_event wakeup{};
+		wakeup.events = EPOLLIN;
+		wakeup.data.fd = _wakeupFd;
+		if (::epoll_ctl(_epollFd, EPOLL_CTL_ADD, _wakeupFd, &wakeup) == RESULT_ERROR)
+			return false;
+
+		_port = port;
 		return true;
 	}
 
 	void Acceptor::Stop()
 	{
-        if(_networkDispatcher)
-		{
-			auto epollDispatcher = std::static_pointer_cast<EpollDispatcher>(_networkDispatcher);
-			if(epollDispatcher)
-				epollDispatcher->UnRegister(shared_from_this());
-		}
+		_running.store(false, std::memory_order_release);
 
-		if(_listenSocketFd != INVALID_SOCKET_FD_VALUE)
-		{
-			NetworkUtils::CloseSocketFd(_listenSocketFd);
-			_listenSocketFd = INVALID_SOCKET_FD_VALUE;
-		}	
+		uint64_t one = 1;
+		::write(_wakeupFd, &one, sizeof(one));
+
+		EN_LOG_INFO("Acceptor Stopped");
 	}
 
-	void Acceptor::Dispatch(NetworkEvent* networkEvent)
+	void Acceptor::Run(std::stop_token st)
 	{
-		if(networkEvent->GetNetworkEventType() == NetworkEventType::Accept)
+		while (_running.load(std::memory_order_acquire) && st.stop_requested() == false)
 		{
-			auto session = shared_from_this();
-			networkEvent->SetOwner(session);
+			int32 numOfEvents = ::epoll_wait(_epollFd, _epollEvents.data(), static_cast<int32>(_epollEvents.size()), INFINITY);
 
-			auto acceptEvent = static_cast<AcceptEvent*>(networkEvent);
-			ProcessAccept(acceptEvent);
-		}
-		else if(networkEvent->GetNetworkEventType() == NetworkEventType::Error)
-		{
-			
-		}
-		else
-		{
-			
-		}
-	}
-
-	void Acceptor:: ProcessAccept(AcceptEvent* acceptEvent)
-	{
-		struct sockaddr_in address;
-		socklen_t addrLen = sizeof(address);
-
-		while(true)
-		{
-			SocketFd clientSocketFd = ::accept4(_listenSocketFd, (struct sockaddr*)&address, &addrLen, SOCK_NONBLOCK | SOCK_CLOEXEC);
-			if(clientSocketFd == INVALID_SOCKET_FD_VALUE)
+			if (numOfEvents == -1)
 			{
-				//	더 이상 연결 요청 없음
-				if(errno == EAGAIN || errno == EWOULDBLOCK)
-					break;
-				//	시스템 콜 인터럽트, 재시도
-				else if(errno == EINTR)
+				if (errno == EINTR)
 					continue;
 
-				///	???	그 외 오류
 				break;
 			}
 
-			NetworkAddress remoteAddress(address);
-
-            //  TODO
-			auto newSession = _sessionRegistry->CreateSession();
-			assert(newSession);
-
-			if(NetworkUtils::SetReuseAddress(clientSocketFd, true) == false)
+			if (numOfEvents > 0)
 			{
-				//	TODO
-				return;
+				for (int32 i = 0; i < numOfEvents; i++)
+				{
+			  		if(_epollEvents[i].data.fd == _wakeupFd)
+					{
+						for (;;)
+						{
+							uint64_t v;
+							ssize_t r = ::read(_wakeupFd, &v, sizeof(v));
+							if (r == sizeof(v))
+								continue;
+							if (r == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))
+								break;
+							if (r == -1 && errno == EINTR)
+								continue;
+							break;
+						}
+						continue;
+					}
+
+
+					if(_epollEvents[i].data.fd == _listenSocketFd)
+					{
+						//	Event 처리동안 ref 늘려서 혹시나 하는상황 대비
+						auto acceptEvent = engine::cnew<AcceptEvent>();
+						acceptEvent->SetOwner(shared_from_this());
+
+						for (;;)
+						{
+							sockaddr_in clientAddr{};
+							socklen_t clientAddrLen = sizeof(clientAddr);
+
+							int clientSocketFd = ::accept4(_listenSocketFd, (sockaddr *)&clientAddr, &clientAddrLen, SOCK_CLOEXEC | SOCK_NONBLOCK);
+							if (clientSocketFd == INVALID_SOCKET_FD_VALUE)
+							{
+								if (errno == EAGAIN || errno == EWOULDBLOCK)
+									break;
+								if (errno == EINTR)
+									continue;
+								break;
+							}
+
+							int shardId = RandomShardId();
+
+							_sessionRegistry->PostToShard(shardId, [this, shardId, clientSocketFd](SessionRegistry::Shard &shard, EpollDispatcher &dispatcher) {
+
+								auto newSession = _sessionRegistry->CreateSession();
+								if (newSession == nullptr) 
+								{ 
+									::close(clientSocketFd); 
+									return; 
+								}
+
+								uint64 sessionId = shard.AllocateSessionId(uint16_t(shardId));
+								newSession->SetSocketFd(clientSocketFd);
+								newSession->SetSessionId(sessionId);
+
+								// fd를 오너 dispatcher의 epoll에 등록
+								if (dispatcher.Register(newSession) == false) 
+								{
+									dispatcher.UnRegister(newSession);
+									::close(clientSocketFd);
+									return;
+								}
+
+								if(NetworkUtils::SetTcpNoDelay(clientSocketFd, true) == false)
+								{
+									dispatcher.UnRegister(newSession);
+									::close(clientSocketFd);
+									return;
+								}
+
+								shard.sessions.emplace(sessionId, std::move(newSession)); });
+						}
+
+						if (acceptEvent)
+						{
+							engine::cdelete(acceptEvent);
+							acceptEvent = nullptr;
+						}
+					}
+				}
 			}
-
-			if(NetworkUtils::SetTcpNoDelay(clientSocketFd, true) == false)
-			{
-				return;
-			}
-
-			newSession->SetSocketFd(clientSocketFd);
-			newSession->SetRemoteAddress(remoteAddress);
-
-			if (_networkDispatcher->Register(std::static_pointer_cast<INetworkObject>(newSession)) == false)
-			{
-				//	TODO
-				return;
-			}
-
-			_sessionRegistry->AddSession(newSession);
-			newSession->ProcessConnect();
 		}
 
-		if(acceptEvent)
+		Close();
+	}
+
+	void Acceptor::Close()
+	{
+		if (_wakeupFd != INVALID_EVENT_FD_VALUE)
 		{
-			engine::cdelete(acceptEvent);
-			acceptEvent = nullptr;
+			::close(_wakeupFd);
+			_wakeupFd = INVALID_EVENT_FD_VALUE;
 		}
+		if (_listenSocketFd != INVALID_SOCKET_FD_VALUE)
+		{
+			::close(_listenSocketFd);
+			_listenSocketFd = INVALID_SOCKET_FD_VALUE;
+		}
+		if (_epollFd != INVALID_EPOLL_FD_VALUE)
+		{
+			::close(_epollFd);
+			_epollFd = INVALID_EPOLL_FD_VALUE;
+		}
+	}
+
+	void Acceptor::Dispatch(NetworkEvent *networkEvent)
+	{
+		
+	}
+
+	int32 Acceptor::RandomShardId()
+	{
+		return ((_autoIncrementShardId++) % _sessionRegistry->GetShardCount());
 	}
 }

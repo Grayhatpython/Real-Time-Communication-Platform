@@ -4,17 +4,21 @@
 namespace network
 {
     class AcceptEvent;
-	class ISessionRegistry;
+	class SessionRegistry;
 	class Acceptor : public IEpollObject
 	{
-		
+        static constexpr size_t S_DEFALUT_EPOLL_EVENT_SIZE = 64;
+		static constexpr uint64_t kListenTag = 1;
+		static constexpr uint64_t kWakeTag   = 2;
+	
 	public:
 		Acceptor();
 		virtual ~Acceptor() override;
 
 	public:
-		bool Start(uint16 port, int32 backlog = SOMAXCONN);
+		bool Initialize(uint16 port, int32 backlog = SOMAXCONN);
 		void Stop();
+     	void Run(std::stop_token st);
 
 	public:
 		virtual NetworkObjectType   GetNetworkObjectType() override { return NetworkObjectType::Acceptor; }
@@ -22,18 +26,24 @@ namespace network
 		virtual void                Dispatch(NetworkEvent* networkEvent) override;
 
 	private:
-		void                        ProcessAccept(AcceptEvent* acceptEvent);
+		//	TEMP
+		int32						RandomShardId();
+		void 						Close();
 
 	public:
-		void									SetNetworkDispatcher(std::shared_ptr<INetworkDispatcher> networkDispatcher) { _networkDispatcher = networkDispatcher; }
-		std::shared_ptr<INetworkDispatcher>		GetNetworkDispatcher() { return _networkDispatcher; }
-
-		void									SetSessionRegistry(ISessionRegistry*  sessionRegistry) { _sessionRegistry = sessionRegistry; }
-		ISessionRegistry*  						GetSessionRegistry() { return _sessionRegistry; }
+		void									SetSessionRegistry(SessionRegistry*  sessionRegistry) { _sessionRegistry = sessionRegistry; }
+		SessionRegistry*  						GetSessionRegistry() { return _sessionRegistry; }
 
 	private:
+		std::vector<struct epoll_event> 		_epollEvents;
+		SessionRegistry*  						_sessionRegistry = nullptr;
+		
         SocketFd								_listenSocketFd = INVALID_SOCKET_FD_VALUE;
-		std::shared_ptr<INetworkDispatcher> 	_networkDispatcher;
-		ISessionRegistry*  						_sessionRegistry = nullptr;
+		EpollFd									_epollFd = INVALID_EPOLL_FD_VALUE;
+		EventFd									_wakeupFd = INVALID_EVENT_FD_VALUE;
+
+		std::atomic<bool>						_running{true};
+        int32                           		_autoIncrementShardId = 0;
+		uint16									_port = 0;
 	};
 }

@@ -26,16 +26,16 @@ namespace engine
 
 	void GlobalContext::Clear()
 	{
-		if (_threadManager)
-		{
-			delete _threadManager;
-			_threadManager = nullptr;
-		}
-
 		if (_memoryPool)
 		{
 			delete _memoryPool;
 			_memoryPool = nullptr;
+		}
+
+		if (_threadManager)
+		{
+			delete _threadManager;
+			_threadManager = nullptr;
 		}
 
         //  async_logger 처리 및 스레드 작업 마무리

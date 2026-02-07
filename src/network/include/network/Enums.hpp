@@ -32,7 +32,7 @@ namespace network
 
 	enum class CoreEventType : uint8
     {
-        SessionRemove, 
+        Wakeup,
         CoreShutdown
     };
 

@@ -15,18 +15,18 @@ namespace engine
 
 	void Lock::WriteLock()
 	{
-		if (_ownerThreadId.load(std::memory_order_relaxed) == LThreadId)
+		if (_ownerThreadId.load(std::memory_order_relaxed) == LthreadState->threadId)
         {
             _recursion.fetch_add(1, std::memory_order_relaxed);
             return;
         }
 
-		uint32 expected = EMPTY_OWNER_THREAD_ID;
+		uint64 expected = EMPTY_OWNER_THREAD_ID;
 
 		for (int i = 0; i < MAX_PAUSE_SPIN_COUNT; ++i)
         {
         	expected = EMPTY_OWNER_THREAD_ID;
-            if (_ownerThreadId.compare_exchange_weak( expected, LThreadId, std::memory_order_acquire, std::memory_order_relaxed))
+            if (_ownerThreadId.compare_exchange_weak( expected, LthreadState->threadId, std::memory_order_acquire, std::memory_order_relaxed))
             {
                 _recursion.store(1, std::memory_order_relaxed);
                 return;
@@ -38,11 +38,11 @@ namespace engine
 
 		pthread_mutex_lock(&_mutex);
             
-		EN_LOG_DEBUG("{} Thread -> pthread_mutex_lock", LThreadId);
+		EN_LOG_DEBUG("{} Thread -> pthread_mutex_lock", LthreadState->threadId);
 
 		while (true)
         {
-            if (_ownerThreadId.compare_exchange_strong( expected, LThreadId, std::memory_order_acquire, std::memory_order_relaxed))
+            if (_ownerThreadId.compare_exchange_strong( expected, LthreadState->threadId, std::memory_order_acquire, std::memory_order_relaxed))
             {
                 _recursion.store(1, std::memory_order_relaxed);
                 ::pthread_mutex_unlock(&_mutex);
@@ -56,14 +56,14 @@ namespace engine
 
 	void Lock::WriteUnLock()
 	{
-        if (_ownerThreadId.load(std::memory_order_relaxed) != LThreadId)
+        if (_ownerThreadId.load(std::memory_order_relaxed) != LthreadState->threadId)
         {
             EN_LOG_ERROR("WriteUnlock by non-owner");
             return;
         }
 
         // 재진입 카운트 감소
-        uint32_t prev = _recursion.fetch_sub(1, std::memory_order_relaxed);
+        uint64 prev = _recursion.fetch_sub(1, std::memory_order_relaxed);
 
         if (prev == 1)
         {
