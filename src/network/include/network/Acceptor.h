@@ -1,11 +1,10 @@
 #pragma once
-#include "NetworkInterface.hpp"
 
 namespace network
 {
     class AcceptEvent;
 	class SessionRegistry;
-	class Acceptor : public IEpollObject
+	class Acceptor : public std::enable_shared_from_this<Acceptor>
 	{
         static constexpr size_t S_DEFALUT_EPOLL_EVENT_SIZE = 64;
 		static constexpr uint64_t kListenTag = 1;
@@ -13,7 +12,7 @@ namespace network
 	
 	public:
 		Acceptor();
-		virtual ~Acceptor() override;
+		~Acceptor();
 
 	public:
 		bool Initialize(uint16 port, int32 backlog = SOMAXCONN);
@@ -21,9 +20,7 @@ namespace network
      	void Run(std::stop_token st);
 
 	public:
-		virtual NetworkObjectType   GetNetworkObjectType() override { return NetworkObjectType::Acceptor; }
-		virtual SocketFd            GetSocketFd() const override { return _listenSocketFd; } 
-		virtual void                Dispatch(NetworkEvent* networkEvent) override;
+		SocketFd            GetSocketFd() const { return _listenSocketFd; } 
 
 	private:
 		//	TEMP

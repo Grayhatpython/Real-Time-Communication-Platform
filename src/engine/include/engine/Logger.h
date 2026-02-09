@@ -1,9 +1,8 @@
 #pragma once
-#include "EngineTLS.hpp"
+#include "EngineTLS.h"
 
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/fmt.h>
-#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 
 namespace engine
 {

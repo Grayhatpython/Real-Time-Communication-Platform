@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ByteSwap.hpp"
+#include "ByteSwap.h"
 
 namespace engine
 {
@@ -39,7 +39,6 @@ namespace engine
                     value = ByteSwap<T>(value);
                 }
 
-                EN_LOG_DEBUG("{}, {}, {}", _writePos, _capacity, sizeof(T));
                 return Write(&value, static_cast<uint32>(sizeof(T)));
             }
         }

@@ -1,17 +1,17 @@
 #pragma once
-#include "NetworkEvent.hpp"
+#include "NetworkEvent.h"
 
 namespace network
 {
-
+    class Session;
     class SessionRegistry;
-    class EpollDispatcher : public INetworkDispatcher
+    class EpollDispatcher : public std::enable_shared_from_this<EpollDispatcher>
     {
         static constexpr size_t S_DEFALUT_EPOLL_EVENT_SIZE = 128;
 
     public:
         EpollDispatcher();
-        virtual ~EpollDispatcher() override;
+        ~EpollDispatcher();
         
     public:
         bool Initialize();
@@ -20,20 +20,20 @@ namespace network
         
     private:
         bool RegisterWakeupFd();
+        void Close();
 
     public:
-        virtual bool            Register(std::shared_ptr<INetworkObject> networkObject) override;
-        virtual DispatchResult  Dispatch(uint32 timeoutMs = TIMEOUT_INFINITE) override;
-       
-        bool                    EnableConnectEvent(std::shared_ptr<INetworkObject> networkObject);
-        bool                    DisableConnectEvent(std::shared_ptr<INetworkObject> networkObject);
-        bool                    EnableSendEvent(std::shared_ptr<INetworkObject> networkObject);
-        bool                    DisableSendEvent(std::shared_ptr<INetworkObject> networkObject);
-        bool                    UnRegister(std::shared_ptr<INetworkObject> networkObject);
+        bool                    Register(std::shared_ptr<Session> session);
+        
+        bool                    EnableConnectEvent(std::shared_ptr<Session> session);
+        bool                    DisableConnectEvent(std::shared_ptr<Session> session);
+        bool                    EnableSendEvent(std::shared_ptr<Session> session);
+        bool                    DisableSendEvent(std::shared_ptr<Session> session);
+        bool                    UnRegister(std::shared_ptr<Session> session);
 
     private:
-        bool                    EnableEvent(const std::shared_ptr<INetworkObject>& networkObject);
-        bool                    DisableEvent(const std::shared_ptr<INetworkObject>& networkObject);
+        bool                    EnableEvent(const std::shared_ptr<Session>& session);
+        bool                    DisableEvent(const std::shared_ptr<Session>& session);
         
     public:
         void                    PostWakeup();
@@ -52,6 +52,8 @@ namespace network
         void                                    SetShardId(int32 shardId) { _shardId = shardId; }
         int32                                   GetShardId() const { return _shardId; }
 
+        void                                    AddPendingCloseSession(uint64 sessionId) { _pendingCloseSessions.push_back(sessionId); } 
+
     private:
         EpollFd                         _epollFd = INVALID_EPOLL_FD_VALUE;
         std::vector<struct epoll_event> _epollEvents;
@@ -61,5 +63,7 @@ namespace network
 
         SessionRegistry*                _sessionRegistry = nullptr;
         std::atomic<bool>               _running{true};
+
+        std::vector<uint64>             _pendingCloseSessions;
     };
 }

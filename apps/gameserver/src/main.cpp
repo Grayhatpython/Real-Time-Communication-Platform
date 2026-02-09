@@ -1,9 +1,20 @@
-#include "Pch.hpp"
-#include "ClientSession.hpp"
-#include "SessionManager.hpp"
+#include "Pch.h"
+#include <chrono>
+#include <thread>
+#include <memory>
+#include <functional>
 
-#include "network/NetworkCore.hpp"
-#include "network/SendBufferPool.hpp"
+#include "ClientSession.h"
+
+#include "engine/MemoryPool.h"
+#include "engine/GlobalContext.h"
+#include "engine/ThreadManager.h"
+
+#include "network/NetworkCore.h"
+#include "network/SendBufferPool.h"
+#include "network/SessionRegistry.h"
+
+
 int main()
 {
     {
@@ -12,14 +23,15 @@ int main()
         engine::ThreadManager* threadManager = engine::GlobalContext::GetInstance().GetThreadManager();
 
         //  SessionFactory 
-        std::function<std::shared_ptr<ClientSession>(void)> sessionFactory = []() {
+        std::function<std::shared_ptr<network::Session>(void)> sessionFactory = []() {
             return engine::MakeShared<ClientSession>();
         };
-        std::unique_ptr<SessionManager> sessionManager = std::make_unique<SessionManager>();
+        
+        std::unique_ptr<network::SessionRegistry> sessionRegistry = std::make_unique<network::SessionRegistry>(2, sessionFactory);
 
-        sessionManager->SetSessionFactory(sessionFactory);
-        std::unique_ptr<network::Server> server = std::make_unique<network::Server>(sessionManager.get());
-        server->Initialize();
+        network::Server* server = new network::Server(sessionRegistry.get(), 8000, 2);
+        if(server->Initialize() == false)
+            return RESULT_ERROR;
 
         threadManager->RegisterExitCallback(
             engine::ThreadRole::Dispatch,
@@ -29,18 +41,19 @@ int main()
             "Network Clear Send Buffer"
         );
 
-        auto task = server->MakeDispatchTask();
-        auto dispatchThraedHandle = threadManager->Spawn("NetworkDispatch",
+        for (int i = 0; i < server->GetDispatchThreadCount(); ++i) 
+        {
+            threadManager->Spawn("Network Dispatch " + std::to_string(i), 
+                engine::ThreadRole::Dispatch,
+                server->MakeDispatchTask(i));
+        }
+    
+        threadManager->Spawn("Network Accept", 
             engine::ThreadRole::Dispatch,
-            task);
-        
+            server->MakeAcceptTask()
+        );
 
-        bool successed = server->Start(8000);
-
-        if(successed == false)
-            return RESULT_ERROR;
-   
-
+        /*
         //  TEMP
         //  game logic thread -> 아직 테스트
         auto gameThreadHandle = threadManager->Spawn(
@@ -56,7 +69,7 @@ int main()
                 }
             }
         );
-
+        */
 
         auto start = std::chrono::high_resolution_clock::now();
 
@@ -66,21 +79,18 @@ int main()
 
         if(input == 's' || input == 'S')
         {
-            threadManager->RequestStop(gameThreadHandle);
-            threadManager->Join(gameThreadHandle);
-            
-            server->StopDispatchTask();
-            threadManager->RequestStop(dispatchThraedHandle);
-            threadManager->Join(dispatchThraedHandle);
-
+            server->Stop();
             threadManager->StopAllAndJoin();
+            sessionRegistry.reset();
 
-            sessionManager.reset();
-
-            network::SendBufferArena::SendBufferPoolClear();
             engine::GlobalContext::GetInstance().Clear();
         }
 
+        if(server)
+        {
+            delete server;
+            server = nullptr;
+        }
         auto end = std::chrono::high_resolution_clock::now();
         
         std::chrono::duration<double, std::milli> duration = end - start;

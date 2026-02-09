@@ -1,6 +1,6 @@
 #pragma once
-#include "CommonType.hpp"
-#include "MemoryPool.hpp"
+#include "CommonType.h"
+#include "MemoryPool.h"
 
 namespace engine 
 {

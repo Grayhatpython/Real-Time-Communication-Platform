@@ -1,5 +1,6 @@
-#include "engine/EnginePch.hpp"
-#include "engine/MemoryPool.hpp"
+#include "engine/EnginePch.h"
+#include "engine/MemoryPool.h"
+#include "engine/Logger.h"
 
 namespace engine
 {
@@ -9,6 +10,7 @@ namespace engine
 
 	ThreadLocalCache::~ThreadLocalCache()
 	{
+		ThreadLocalCacheClear();
 	}
 
 	void* ThreadLocalCache::Allocate(size_t dataSize)

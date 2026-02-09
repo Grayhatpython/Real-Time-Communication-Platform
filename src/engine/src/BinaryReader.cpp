@@ -1,5 +1,5 @@
-#include "engine/EnginePch.hpp"
-#include "engine/BinaryReader.hpp"
+#include "engine/EnginePch.h"
+#include "engine/BinaryReader.h"
 
 namespace engine
 {

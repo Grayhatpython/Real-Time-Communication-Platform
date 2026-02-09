@@ -1,6 +1,7 @@
-#include "engine/EnginePch.hpp"
-#include "engine/ThreadManager.hpp"
-#include "engine/MemoryPool.hpp"
+#include "engine/EnginePch.h"
+#include "engine/ThreadManager.h"
+#include "engine/MemoryPool.h"
+#include "engine/Logger.h"
 
 namespace engine
 {

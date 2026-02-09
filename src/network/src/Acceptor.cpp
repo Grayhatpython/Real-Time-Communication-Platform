@@ -1,11 +1,13 @@
-#include "network/NetworkPch.hpp"
-#include "network/Acceptor.hpp"
-#include "network/NetworkCore.hpp"
-#include "network/NetworkUtils.hpp"
-#include "network/NetworkEvent.hpp"
-#include "network/NetworkDispatcher.hpp"
-#include "network/Session.hpp"
-#include "network/SessionRegistry.hpp"
+#include "network/NetworkPch.h"
+#include "network/Acceptor.h"
+#include "network/NetworkCore.h"
+#include "network/NetworkUtils.h"
+#include "network/NetworkEvent.h"
+#include "network/NetworkDispatcher.h"
+#include "network/Session.h"
+#include "network/SessionRegistry.h"
+
+#include "engine/Logger.h"
 
 namespace network
 {
@@ -68,6 +70,8 @@ namespace network
 		if (::epoll_ctl(_epollFd, EPOLL_CTL_ADD, _wakeupFd, &wakeup) == RESULT_ERROR)
 			return false;
 
+		_epollEvents.resize(S_DEFALUT_EPOLL_EVENT_SIZE);
+
 		_port = port;
 		return true;
 	}
@@ -86,7 +90,7 @@ namespace network
 	{
 		while (_running.load(std::memory_order_acquire) && st.stop_requested() == false)
 		{
-			int32 numOfEvents = ::epoll_wait(_epollFd, _epollEvents.data(), static_cast<int32>(_epollEvents.size()), INFINITY);
+			int32 numOfEvents = ::epoll_wait(_epollFd, _epollEvents.data(), static_cast<int32>(_epollEvents.size()), TIMEOUT_INFINITE);
 
 			if (numOfEvents == -1)
 			{
@@ -120,9 +124,6 @@ namespace network
 
 					if(_epollEvents[i].data.fd == _listenSocketFd)
 					{
-						//	Event 처리동안 ref 늘려서 혹시나 하는상황 대비
-						auto acceptEvent = engine::cnew<AcceptEvent>();
-						acceptEvent->SetOwner(shared_from_this());
 
 						for (;;)
 						{
@@ -141,42 +142,9 @@ namespace network
 
 							int shardId = RandomShardId();
 
-							_sessionRegistry->PostToShard(shardId, [this, shardId, clientSocketFd](SessionRegistry::Shard &shard, EpollDispatcher &dispatcher) {
-
-								auto newSession = _sessionRegistry->CreateSession();
-								if (newSession == nullptr) 
-								{ 
-									::close(clientSocketFd); 
-									return; 
-								}
-
-								uint64 sessionId = shard.AllocateSessionId(uint16_t(shardId));
-								newSession->SetSocketFd(clientSocketFd);
-								newSession->SetSessionId(sessionId);
-
-								// fd를 오너 dispatcher의 epoll에 등록
-								if (dispatcher.Register(newSession) == false) 
-								{
-									dispatcher.UnRegister(newSession);
-									::close(clientSocketFd);
-									return;
-								}
-
-								if(NetworkUtils::SetTcpNoDelay(clientSocketFd, true) == false)
-								{
-									dispatcher.UnRegister(newSession);
-									::close(clientSocketFd);
-									return;
-								}
-
-								shard.sessions.emplace(sessionId, std::move(newSession)); });
+							_sessionRegistry->ProcessAccepted(shardId, clientSocketFd);
 						}
 
-						if (acceptEvent)
-						{
-							engine::cdelete(acceptEvent);
-							acceptEvent = nullptr;
-						}
 					}
 				}
 			}
@@ -202,11 +170,6 @@ namespace network
 			::close(_epollFd);
 			_epollFd = INVALID_EPOLL_FD_VALUE;
 		}
-	}
-
-	void Acceptor::Dispatch(NetworkEvent *networkEvent)
-	{
-		
 	}
 
 	int32 Acceptor::RandomShardId()

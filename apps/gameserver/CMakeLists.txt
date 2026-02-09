@@ -2,16 +2,11 @@
 # 이 변수는 나중에 빌드될 실행 파일의 이름으로 사용
 set(APP_NAME "gameserver")
 
-# 소스 파일과 헤더 파일을 변수에 담아 관리
-set(SOURCES
-    src/main.cpp
-    src/SessionManager.cpp
-    src/ClientSession.cpp
-)
+# src 디렉토리의 모든 .cpp 파일을 SOURCES 변수에 담기
+file(GLOB_RECURSE SOURCES "src/*.cpp")
 
-set(HEADERS
-
-)
+# include 디렉토리의 모든 .h 파일을 HEADERS 변수에 담기
+file(GLOB_RECURSE HEADERS "include/*.h")
 
 # 소스 파일과 헤더 파일을 함께 타겟에 추가
 add_executable(${APP_NAME} ${SOURCES} ${HEADERS})
@@ -19,7 +14,7 @@ add_executable(${APP_NAME} ${SOURCES} ${HEADERS})
 # --- 미리 컴파일된 헤더(Precompiled Headers, PCH) 설정 ---
 # PCH로 사용할 메인 헤더 파일을 지정
 # 이 파일은 일반적으로 프로젝트의 include 디렉토리 내에 위치하며, 자주 사용되는 모든 헤더들을 포함
-set(SERVER_PCH_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/include/Pch.hpp")
+set(SERVER_PCH_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/include/Pch.h")
 target_precompile_headers(${APP_NAME} PRIVATE ${SERVER_PCH_HEADER})
 
 # 생성된 실행 파일(`APP_NAME` = gameserver)에 필요한 라이브러리들을 링크(연결)
@@ -32,4 +27,4 @@ target_link_libraries(${APP_NAME} PRIVATE
 )
 
 # 타겟에 인클루드 디렉토리 추가
-target_include_directories(${APP_NAME} PRIVATE "include")
+target_include_directories(${APP_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")

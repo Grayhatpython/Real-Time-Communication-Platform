@@ -1,8 +1,8 @@
-#include "engine/EnginePch.hpp"
-#include "engine/GlobalContext.hpp"
-#include "engine/MemoryPool.hpp"
-#include "engine/ThreadManager.hpp"
-#include "engine/Logger.hpp"
+#include "engine/EnginePch.h"
+#include "engine/GlobalContext.h"
+#include "engine/MemoryPool.h"
+#include "engine/ThreadManager.h"
+#include "engine/Logger.h"
 
 namespace engine
 {

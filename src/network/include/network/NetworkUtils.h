@@ -1,6 +1,6 @@
 #pragma once
 
-#include "NetworkAddress.hpp"
+#include "NetworkAddress.h"
 
 namespace network
 {

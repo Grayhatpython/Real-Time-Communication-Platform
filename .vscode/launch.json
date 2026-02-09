@@ -18,7 +18,7 @@
       ]
     },
     {
-      "name": "Debug DummyClient (CMake)",
+      "name": "Debug Client (CMake)",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/apps/gameclient/gameclient",
@@ -37,8 +37,8 @@
   ],
   "compounds": [
     {
-      "name": "Debug Server + DummyClient (CMake)",
-      "configurations": ["Debug Server (CMake)", "Debug DummyClient (CMake)"],
+      "name": "Debug Server + Client (CMake)",
+      "configurations": ["Debug Server (CMake)", "Debug Client (CMake)"],
       "stopAll": true
     }
   ]

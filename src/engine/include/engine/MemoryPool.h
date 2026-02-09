@@ -1,5 +1,5 @@
 #pragma once
-#include "engine/GlobalContext.hpp"
+#include "engine/GlobalContext.h"
 
 namespace engine
 {

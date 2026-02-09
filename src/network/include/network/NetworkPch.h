@@ -45,24 +45,8 @@
 
 // 타입 정의 헤더 파일 
 
-#include "engine/CommonType.hpp"
-#include "engine/Logger.hpp"
-#include "engine/Lock.hpp"
-#include "engine/MemoryPool.hpp"
+#include "engine/CommonType.h"
 
-#include "engine/GlobalContext.hpp"
-#include "engine/ThreadManager.hpp"
-
-#include "network/Types.hpp"
-#include "network/Enums.hpp"
-
-
-//  TEMP
-#pragma pack(push, 1)
-struct PacketHeader
-{
-    uint16 size;
-    uint16 id;
-};
-#pragma pack(pop)
+#include "network/Types.h"
+#include "network/Enums.h"
 

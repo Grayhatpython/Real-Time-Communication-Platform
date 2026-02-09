@@ -1,5 +1,6 @@
-#include "engine/EnginePch.hpp"
-#include "engine/Lock.hpp"
+#include "engine/EnginePch.h"
+#include "engine/Lock.h"
+#include "engine/Logger.h"
 
 namespace engine
 {

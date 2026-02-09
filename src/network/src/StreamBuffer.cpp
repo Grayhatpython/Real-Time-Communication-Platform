@@ -1,5 +1,5 @@
-#include "network/NetworkPch.hpp"
-#include "network/StreamBuffer.hpp"
+#include "network/NetworkPch.h"
+#include "network/StreamBuffer.h"
 
 namespace network
 {

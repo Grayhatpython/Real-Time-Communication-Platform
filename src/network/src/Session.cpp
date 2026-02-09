@@ -1,9 +1,21 @@
-#include "network/NetworkPch.hpp"
-#include "network/Session.hpp"
-#include "network/NetworkUtils.hpp"
-#include "network/NetworkDispatcher.hpp"
+#include "network/NetworkPch.h"
+#include "network/Session.h"
+#include "network/NetworkUtils.h"
+#include "network/SessionRegistry.h"
+#include "network/NetworkDispatcher.h"
 
-#include "engine/BinaryReader.hpp"
+#include "engine/Logger.h"
+#include "engine/MemoryPool.h"
+#include "engine/BinaryReader.h"
+
+//  TEMP
+#pragma pack(push, 1)
+struct PacketHeader
+{
+    uint16 size;
+    uint16 id;
+};
+#pragma pack(pop)
 
 namespace network
 {
@@ -14,115 +26,93 @@ namespace network
 
 	Session::~Session()
 	{
+		EN_LOG_DEBUG("~Session");
 		
 		//	TEMP
 		while (_sendContextQueue.empty() == false)
 			_sendContextQueue.pop();
 	}
 
-	bool Session::Connect(NetworkAddress& targetAddress)
-	{
-		SessionState state = GetState();
-		if (state != SessionState::Disconnected)
-		{
-			return false;
-		}
-
-		_socketFd = NetworkUtils::CreateSocketFd(true);
-		if (_socketFd == INVALID_SOCKET_FD_VALUE)
-		{
-			return false;
-		}
-
-		if (NetworkUtils::Bind(_socketFd, static_cast<uint16>(0)) == false)
-		{
-			NetworkUtils::CloseSocketFd(_socketFd);
-			return false;
-		}
-
-		struct sockaddr_in serverAddress = targetAddress.GetSocketAddress();
-		_state.store(SessionState::ConnectPending, std::memory_order_release);
-
-		int32 ret = ::connect(_socketFd, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
-
-		if(ret == RESULT_OK)
-		{
-			if(_networkDispatcher->Register(shared_from_this()) == false)
-			{
-				NetworkUtils::CloseSocketFd(_socketFd);
-				_state.store(SessionState::Disconnected, std::memory_order_release);
-				return false;
-			}
-
-			ProcessConnect();
-		}
-
-		if(ret == RESULT_ERROR)
-		{
-			//	EINPROGRESS 경우 연결이 즉시 완료되지 않았지만, 백그라운드에서 진행 중
-			// 	이 경우 이후 epoll 등으로 EPOLLOUT 이벤트를 기다려 연결 완료를 감지
-			//	그 외 음수 값 (다른 errno): 연결 시도가 명백한 오류로 실패
-			if(errno != EINPROGRESS)
-			{
-				NetworkUtils::CloseSocketFd(_socketFd);
-				_state.store(SessionState::Disconnected, std::memory_order_release);
-				return false;
-			}
-
-			return RegisterAsyncConnect();
-		}
-
-		return true;
-	}
-
-	void Session::Disconnect()
-	{
-		SessionState expected = SessionState::Connected;
-		
-		if(_state.compare_exchange_strong(expected, SessionState::Disconnected, std::memory_order_acq_rel, std::memory_order_acquire))
-		{	
-			DisconnectEvent* disconnectEvent = engine::cnew<DisconnectEvent>();
-			auto session = shared_from_this();
-			disconnectEvent->SetOwner(session);
-
-			CloseSocket();
-			
-			ProcessDisconnect(disconnectEvent);
-		}
-		else
-		{
-			;
-		}
-	}
 
 	bool Session::TryFlushSend(std::shared_ptr<SendContext> sendContext)
 	{
-		if(GetState() != SessionState::Connected)
+		if (GetState() != SessionState::Connected)
+        {
+			Disconnect();
 			return false;
+		}
 
 		{
 			engine::WriteLockGuard lock(_lock);
-			_sendContextQueue.push(sendContext);
+			_sendContextQueue.push(std::move(sendContext));
 		}
 
-		bool expected = false;
-		if(_isSending.compare_exchange_strong(expected, true, std::memory_order_acquire, std::memory_order_relaxed) == true)
+		// “오너 flush 스케줄”은 딱 한 번만
+		bool wasSending = _isSending.exchange(true, std::memory_order_acq_rel);
+		if (wasSending == false)
 		{
-			FlushSend();
-			return true;
+			// 오너 shard로 flush 커맨드 post (eventfd로 깨움)
+			std::weak_ptr<Session> sessionWeakPtr = shared_from_this();
+			_sessionRegistry->PostToShard(_shardId, [sessionWeakPtr](SessionRegistry::Shard& shard, std::shared_ptr<EpollDispatcher>& dispatcher) {
+				if (auto session = sessionWeakPtr.lock())
+				{
+					session->FlushSendOwner(dispatcher);
+				}
+			});
 		}
 
 		return true;
 	}
 
-	void Session::FlushSend()
-	{
-		auto epollDispatcher = std::static_pointer_cast<EpollDispatcher>(_networkDispatcher);
+    void Session::Disconnect()
+    {
+		// 오너 shard로 flush 커맨드 post (eventfd로 깨움)
+		std::weak_ptr<Session> sessionWeakPtr = shared_from_this();
+		_sessionRegistry->PostToShard(_shardId, [sessionWeakPtr](SessionRegistry::Shard& shard, std::shared_ptr<EpollDispatcher>& dispatcher) {
+			if (auto session = sessionWeakPtr.lock())
+			{
+				session->DisconnectOwner(dispatcher);
+			}
+		});
+    }
 
+	bool Session::TryConnect(std::shared_ptr<EpollDispatcher>& dispatcher)
+	{
+		if (GetState() != SessionState::ConnectPending)
+			return false;
+
+		int err = 0;
+		socklen_t len = sizeof(err);
+		if (::getsockopt(_socketFd, SOL_SOCKET, SO_ERROR, &err, &len) == RESULT_ERROR)
+			return false;
+
+		if (err != RESULT_OK) 
+		{
+			return false;
+		}
+
+		auto session = shared_from_this();
+		dispatcher->Register(session);
+
+		ProcessConnect();
+
+		// 연결되자마자 대기 send 있으면 바로 flush -> ?
+		// FlushSendOwner(dispatcher);
+
+		return true;
+	}
+
+	void Session::DisconnectOwner(std::shared_ptr<EpollDispatcher>& dispatcher)
+	{
+		dispatcher->AddPendingCloseSession(_sessionId);
+		SetState(SessionState::DisconnectPosted);
+	}
+
+	void Session::FlushSendOwner(std::shared_ptr<EpollDispatcher>& dispatcher)
+	{
 		std::queue<std::shared_ptr<SendContext>> sendContexts;
 		{
 			engine::WriteLockGuard lock(_lock);
-			
 			sendContexts.swap(_sendContextQueue);
 			
 		}
@@ -131,14 +121,14 @@ namespace network
 		{
 			auto sendContext = sendContexts.front();
 
-			const BYTE* baseSendBufferPtr = sendContext->sendBuffer->GetBuffer();
-			const size_t remainPacketSize = sendContext->size - sendContext->offset;
-
 			if(sendContext->offset >= sendContext->size)
 			{
 				sendContexts.pop();
 				continue;;
 			}
+
+			const BYTE* baseSendBufferPtr = sendContext->sendBuffer->GetBuffer();
+			const size_t remainPacketSize = sendContext->size - sendContext->offset;
 
 			sendContext->iovecBuf.iov_base =  const_cast<BYTE*>(baseSendBufferPtr + sendContext->offset);
  			sendContext->iovecBuf.iov_len  = remainPacketSize;
@@ -160,10 +150,12 @@ namespace network
 				continue;
 			}
 
+			//	무슨 경우?
 			if(bytesTransferred == 0)
 			{
-				epollDispatcher->DisableConnectEvent(shared_from_this());
-				Disconnect();
+				dispatcher->DisableSendEvent(shared_from_this());
+				dispatcher->AddPendingCloseSession(_sessionId);
+				SetState(SessionState::DisconnectPosted);
 				break;
 			}
 
@@ -172,49 +164,56 @@ namespace network
 
 			if(errno == EAGAIN || errno == EWOULDBLOCK)
 			{
-				epollDispatcher->EnableConnectEvent(shared_from_this());
-				break;
+				{
+					engine::WriteLockGuard lock(_lock);
+					while(sendContexts.empty() == false)
+					{
+						_sendContextQueue.push(sendContexts.front());
+						sendContexts.pop();
+					}
+				}
+
+				dispatcher->EnableSendEvent(shared_from_this());
+
+				//	TODO
+				return;
 			}	
 
-			epollDispatcher->DisableConnectEvent(shared_from_this());
-			Disconnect();
+			dispatcher->DisableSendEvent(shared_from_this());
+			dispatcher->AddPendingCloseSession(_sessionId);
+			SetState(SessionState::DisconnectPosted);
 			break;
 		}
 
+		dispatcher->DisableSendEvent(shared_from_this());
 		_isSending.store(false, std::memory_order_release);
+
+		//	찰나에 더 sendContextQueue에 send Context가 쌓여있을 경우 다시 스케쥴
+		{
+			bool hasMore = false;
+			{
+				engine::WriteLockGuard lock(_lock);
+				hasMore = !_sendContextQueue.empty();
+			}
+			
+			if (hasMore == true) 
+			{
+				bool expected = false;
+				if (_isSending.compare_exchange_strong(expected, true, std::memory_order_acq_rel))
+				{
+					// 오너 shard로 flush 커맨드 post (eventfd로 깨움)
+					std::weak_ptr<Session> sessionWeakPtr = shared_from_this();
+					_sessionRegistry->PostToShard(_shardId, [sessionWeakPtr](SessionRegistry::Shard& shard, std::shared_ptr<EpollDispatcher>& dispatcher) {
+						if (auto session = sessionWeakPtr.lock())
+						{
+							session->FlushSendOwner(dispatcher);
+						}
+					});
+				}
+			}
+		}
 	}
 
-	bool Session::RegisterAsyncConnect()
-	{
-		if(_networkDispatcher == nullptr)
-			return false;
-
-		if(_networkDispatcher->Register(shared_from_this()) == false)
-		{
-			NetworkUtils::CloseSocketFd(_socketFd);
-			_state.store(SessionState::Disconnected, std::memory_order_release);
-			return false;
-		}
-
-		auto epollDispatcher = std::static_pointer_cast<EpollDispatcher>(_networkDispatcher);
-		if(epollDispatcher == nullptr)
-		{
-			CloseSocket();
-			_state.store(SessionState::Disconnected, std::memory_order_release);
-			return false;
-		}
-
-		if(epollDispatcher->EnableConnectEvent(shared_from_this()) == false)
-		{
-			CloseSocket();
-			_state.store(SessionState::Disconnected, std::memory_order_release);
-			return false;
-		}
-
-		return true;
-	}
-
-	//	Server Accept4() -> ProcessConnect
 	void Session::ProcessConnect()
 	{
 		_state.store(SessionState::Connected, std::memory_order_release);
@@ -225,68 +224,18 @@ namespace network
         EN_LOG_INFO("{} Session is Connected", _sessionId);
 	}
 
-	//	Client Connect() -> ProcessConnect
-	void Session::ProcessConnect(ConnectEvent* connectEvent)
+
+	DispatchResult Session::ProcessRecv(RecvEvent* recvEvent)
 	{
-		if(connectEvent)
+		if(recvEvent)
 		{
-			engine::cdelete(connectEvent);
-			connectEvent = nullptr;
+			engine::cdelete(recvEvent);
+			recvEvent = nullptr;
 		}
 
-		//	TODO
-		if(GetSocketError() == false)
-		{
-			Disconnect();
-			return;
-		}
-
-		auto epollDispatcher = std::static_pointer_cast<EpollDispatcher>(_networkDispatcher);
-		if(epollDispatcher)
-		{
-			if(epollDispatcher->DisableConnectEvent(shared_from_this()) == false)
-			{
-				Disconnect();
-				return;
-			}
-		}
-
-		_state.store(SessionState::Connected, std::memory_order_release);
-
-		OnConnected();
-
-		EN_LOG_INFO("Connected to the {} session(server)", _sessionId);
-	}
-
-	void Session::ProcessDisconnect(DisconnectEvent* disconnectEvent)
-	{	
-		OnDisconnected();
-
-		if(disconnectEvent)
-		{
-			engine::cdelete(disconnectEvent);
-			disconnectEvent = nullptr;
-		}
-
-		//	TODO
-		auto session = std::static_pointer_cast<Session>(shared_from_this());
-		if(session)
-		{
-			auto epollDispatcher = std::static_pointer_cast<EpollDispatcher>(_networkDispatcher);
-			if(epollDispatcher)
-			{
-				epollDispatcher->PostRemoveSessionEvent(_sessionId);
-			}
-		}
-
-		EN_LOG_INFO("{} session Disconnected", _sessionId);
-	}
-
-	void Session::ProcessRecv(RecvEvent* recvEvent)
-	{
 		if(GetState() != SessionState::Connected)
 		{
-			;
+			return DispatchResult::InvalidSessionStateProcessRecv;
 		}
 
 		while(true)
@@ -304,16 +253,14 @@ namespace network
 			}
 			else if(recvLen == 0)
 			{
-				Disconnect();
-				break;
+				return DispatchResult::GracefulClose;
 			}
 
 			//	처리된 데이터 크기만큼 streamBuffer writePos 처리
 			if (_streamBuffer.OnWrite(recvLen) == false)
 			{
 				//	정해진 용량 초과 -> 연결 종료 
-				Disconnect();
-				return;
+				return DispatchResult::StreamBufferOverflow;
 			}
 
 			auto dataSize = _streamBuffer.GetReadableSize();
@@ -324,18 +271,13 @@ namespace network
 			if (processLen < 0 || processLen > dataSize || _streamBuffer.OnRead(processLen) == false)
 			{
 				//	??? 로직상 오면 안되는 부분 연결 종료
-				Disconnect();
-				return;
+				return DispatchResult::InvalidPacketData;
 			}
 			
 			_streamBuffer.Clean();
 		}
 
-		if(recvEvent)
-		{
-			engine::cdelete(recvEvent);
-			recvEvent = nullptr;
-		}
+		return DispatchResult::NetworkEventDispatched;
 	}
 
 	int32 Session::PacketParsing(BYTE* buffer, int32 dataSize)
@@ -373,43 +315,17 @@ namespace network
 		return processLen;
 	}
 
-	void Session::ProcessSend(SendEvent* sendEvent)
+	//	Owner 에서 하는거라 바로 pending 추가가능
+	void Session::OnSendable(std::shared_ptr<EpollDispatcher>& dispatcher)
 	{
 		if(GetState() != SessionState::Connected)
-			;
-
-		bool expected = false;
-		if(_isSending.compare_exchange_strong(expected, true, std::memory_order_acquire, std::memory_order_relaxed) == true)
 		{
-			FlushSend();
+			dispatcher->AddPendingCloseSession(_sessionId);
+			return;
 		}
+
+		FlushSendOwner(dispatcher);
 	}
-
-    void Session::ProcessError(ErrorEvent *errorEvent)
-    {
-		if(GetSocketError() == true)
-		{
-			//	?
-		}
-
-		Disconnect();
-    }
-
-    void Session::CloseSocket()
-    {
-		if(_networkDispatcher)
-		{
-			auto epollDispatcher = std::static_pointer_cast<EpollDispatcher>(_networkDispatcher);
-			if(epollDispatcher)
-				epollDispatcher->UnRegister(shared_from_this());
-		}
-
-		if(_socketFd != INVALID_SOCKET_FD_VALUE)
-		{
-			NetworkUtils::CloseSocketFd(_socketFd);
-			_socketFd = INVALID_SOCKET_FD_VALUE;
-		}			
-    }
 
     bool Session::GetSocketError()
     {
@@ -426,62 +342,6 @@ namespace network
 		return true;
     }
 
-    void Session::Dispatch(NetworkEvent* networkEvent)
-	{
-		if(networkEvent)
-		{
-			switch (networkEvent->GetNetworkEventType())
-			{
-			case NetworkEventType::Connect:
-				{
-					ConnectEvent* connectEvent = static_cast<ConnectEvent*>(networkEvent);
-					if(connectEvent)
-					{
-						auto networkObject = shared_from_this();
-						connectEvent->SetOwner(networkObject);
-						ProcessConnect(connectEvent);
-					}
-				}
-				break;
-			case NetworkEventType::Recv:
-			{
-				RecvEvent* recvEvent = static_cast<RecvEvent*>(networkEvent);
-				if(recvEvent)
-				{
-					auto networkObject = shared_from_this();
-					recvEvent->SetOwner(networkObject);
-					ProcessRecv(recvEvent);
-				}
-				break;
-			}
-			case NetworkEventType::Send:
-			{
-				SendEvent* sendEvent = static_cast<SendEvent*>(networkEvent);
-				if(sendEvent)
-				{
-					auto networkObject = shared_from_this();
-					sendEvent->SetOwner(networkObject);
-					ProcessSend(sendEvent);
-				}
-				break;
-			}
-			case NetworkEventType::Error:
-			{
-				ErrorEvent* errorEvent = static_cast<ErrorEvent*>(networkEvent);
-				if(errorEvent)
-				{
-					auto networkObject = shared_from_this();
-					errorEvent->SetOwner(networkObject);
-					ProcessError(errorEvent);
-				}
-				break;
-			}
-			default:
-				//	???
-				break;
-			}	
-		}
-	}
 
 }
 

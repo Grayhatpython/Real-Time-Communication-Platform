@@ -1,5 +1,4 @@
 #pragma once
-#include "NetworkInterface.hpp"
 
 namespace network
 {
@@ -24,13 +23,13 @@ namespace network
 
     public:
         NetworkEventType                    GetNetworkEventType() const { return _type; }
-        std::shared_ptr<INetworkObject>     GetOwner() { return _owner; }
+        std::shared_ptr<Session>            GetOwner() { return _owner; }
 
-        void                                SetOwner(std::shared_ptr<INetworkObject> owner) { _owner = owner; }
+        void                                SetOwner(std::shared_ptr<Session> owner) { _owner = owner; }
 
     protected:
         NetworkEventType                    _type = NetworkEventType::None;
-        std::shared_ptr<INetworkObject>     _owner;
+        std::shared_ptr<Session>            _owner;
     };
 
     class ConnectEvent : public NetworkEvent
@@ -57,24 +56,6 @@ namespace network
 
     public:
         std::shared_ptr<Session> GetOwnerSession();
-    };
-
-    class AcceptEvent : public NetworkEvent
-    {
-    public:
-        AcceptEvent()
-            : NetworkEvent(NetworkEventType::Accept)
-        {
-
-        }
-
-    public:
-        void                                SetAcceptSocketFd(SocketFd socket) { _acceptSocket = socket;}
-        SocketFd&                           GetAcceptSocketFd() { return _acceptSocket; }
-        std::shared_ptr<Acceptor>           GetOwnerAcceptor();
-
-    private:
-        SocketFd _acceptSocket = INVALID_SOCKET_FD_VALUE;
     };
 
     class SendEvent : public NetworkEvent
@@ -104,15 +85,5 @@ namespace network
 
     public:
         std::shared_ptr<Session> GetOwnerSession();
-    };
-
-    class ErrorEvent : public NetworkEvent
-    {
-    public:
-        ErrorEvent()
-            : NetworkEvent(NetworkEventType::Error)
-        {
-
-        }
     };
 }

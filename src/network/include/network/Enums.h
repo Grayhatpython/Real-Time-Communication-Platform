@@ -1,5 +1,5 @@
 #pragma once
-#include "network/Types.hpp"
+#include "network/Types.h"
 
 namespace network
 {
@@ -12,14 +12,6 @@ namespace network
 		Recv,
 		Send,
 		Error
-	};
-
-	//	TEMP : linux
-	enum class NetworkObjectType 
-	{
-		None,
-		Acceptor,
-		Session,
 	};
 
 	enum class SessionState
@@ -44,9 +36,19 @@ namespace network
 		Interrupted,
 		ExitRequested,
 		FatalError,
-		NetworkEventDispatched,
-		InvalidDispatcher,
 
-		CoreEventDispatched = 200
+		//	Successed
+		NetworkEventDispatched,
+
+		//	Recv Error
+		InvalidSessionStateProcessRecv,
+		GracefulClose,
+		StreamBufferOverflow,
+		InvalidPacketData,
+
+		//	Send Error
+		InvalidSessionStateProcessSend,
+		
+		InvalidNetworkEvent,
 	};
 }

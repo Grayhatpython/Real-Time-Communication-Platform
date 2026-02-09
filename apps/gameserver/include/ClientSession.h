@@ -1,8 +1,8 @@
 #pragma once
 
-#include "network/Session.hpp"
-#include "engine/BinaryWriter.hpp"
-#include "engine/BinaryReader.hpp"
+#include "network/Session.h"
+#include "engine/BinaryWriter.h"
+#include "engine/BinaryReader.h"
 
 enum class PacketId : uint16_t
 {
@@ -33,7 +33,7 @@ struct StatPacket : PacketHeader
 #pragma pack(pop)
 
 
-class ServerSession : public network::Session
+class ClientSession : public network::Session
 {
 public:
     virtual void OnConnected() override

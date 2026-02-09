@@ -1,6 +1,8 @@
-#include "network/NetworkPch.hpp"
-#include "network/SendBufferPool.hpp"
-#include "network/SendBuffer.hpp"
+#include "network/NetworkPch.h"
+#include "network/SendBufferPool.h"
+#include "network/SendBuffer.h"
+
+#include "engine/Logger.h"
 
 namespace network
 {

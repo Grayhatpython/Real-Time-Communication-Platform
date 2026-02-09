@@ -1,5 +1,5 @@
 #pragma once
-
+#include "NetworkPch.h"
 namespace network
 {
 	class StreamBuffer

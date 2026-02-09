@@ -1,5 +1,5 @@
-#include "engine/EnginePch.hpp"
-#include "engine/Logger.hpp"
+#include "engine/EnginePch.h"
+#include "engine/Logger.h"
 
 #include <spdlog/async.h>
 #include <spdlog/sinks/stdout_color_sinks.h>

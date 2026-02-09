@@ -30,12 +30,8 @@
 #include <cassert>
 
 // 타입 정의 헤더 파일 
-#include "CommonType.hpp"
-#include "EngineTLS.hpp"
-#include "GlobalContext.hpp"
-#include "Logger.hpp"
-#include "MemoryPool.hpp"
-#include "Lock.hpp"
+#include "CommonType.h"
+#include "EngineTLS.h"
 
 
 

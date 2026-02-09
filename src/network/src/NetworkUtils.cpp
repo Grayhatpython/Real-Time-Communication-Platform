@@ -1,5 +1,5 @@
-#include "network/NetworkPch.hpp"
-#include "network/NetworkUtils.hpp"
+#include "network/NetworkPch.h"
+#include "network/NetworkUtils.h"
 
 namespace network
 {

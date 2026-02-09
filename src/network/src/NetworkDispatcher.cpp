@@ -1,10 +1,12 @@
-#include "network/NetworkPch.hpp"
-#include "network/NetworkDispatcher.hpp"
-#include "network/NetworkUtils.hpp"
-#include "network/Session.hpp"
-#include "network/Acceptor.hpp"
-#include "network/SessionRegistry.hpp"
-#include "network/NetworkDispatcher.hpp"
+#include "network/NetworkPch.h"
+#include "network/NetworkDispatcher.h"
+#include "network/NetworkUtils.h"
+#include "network/Session.h"
+#include "network/Acceptor.h"
+#include "network/SessionRegistry.h"
+#include "network/NetworkDispatcher.h"
+
+#include "engine/Logger.h"
 
 namespace network
 {
@@ -28,8 +30,9 @@ namespace network
 
         _epollEvents.resize(S_DEFALUT_EPOLL_EVENT_SIZE);
         
-        _sessionRegistry->SetShardWakeup(_shardId, [this](){
-            this->PostWakeup();
+        auto epollDispatcher = shared_from_this();
+        _sessionRegistry->SetShardWakeup(_shardId, [epollDispatcher](){
+            epollDispatcher->PostWakeup();
         });
 
         return true;
@@ -48,8 +51,110 @@ namespace network
     {
         while (_running.load(std::memory_order_acquire) && st.stop_requested() == false)
         {
-            Dispatch();
+            int32 numOfEvents = ::epoll_wait(_epollFd, _epollEvents.data(), static_cast<int32>(_epollEvents.size()), TIMEOUT_INFINITE); 
+
+            if(numOfEvents == 0)
+                continue;
+            
+            if(numOfEvents < 0)
+            {
+                if(errno == EINTR)
+                    continue;
+
+                break;
+            }
+
+            if(numOfEvents > 0)
+            {
+                for(int32 i = 0 ; i < numOfEvents; i++)
+                {         
+                    if(_epollEvents[i].data.fd == _wakeupFd)
+                    {
+                        ConsumeEventSignal(_wakeupFd);
+
+                        //  TODO
+                        auto epollDispatcher = std::static_pointer_cast<EpollDispatcher>(shared_from_this());
+                        _sessionRegistry->ExecuteCommands(_shardId, epollDispatcher);
+
+                        continue;
+                    }
+        
+                    auto sessionId = _epollEvents[i].data.u64;
+                    auto session = _sessionRegistry->FindSession(_shardId, sessionId);
+                    if (session == nullptr) 
+                        continue;
+
+                    int32 events = _epollEvents[i].events;
+
+                    //  Error Event
+                    if((events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)) != 0)
+                    {
+                        _pendingCloseSessions.push_back(sessionId);
+                        continue;
+                    }
+                    
+                    //  Read Event
+                    if((events & EPOLLIN) != 0)
+                    {
+                        //  TODO
+                        RecvEvent* recvEvent = engine::cnew<RecvEvent>();
+                        auto dispatchResult = session->ProcessRecv(recvEvent);
+
+                        if(dispatchResult != DispatchResult::NetworkEventDispatched)
+                        {
+                            _pendingCloseSessions.push_back(sessionId);
+                            continue;
+                        }
+                    }
+
+                    if((events & EPOLLOUT) != 0)
+                    {
+                         //  Connect 
+                        if(session->GetState() == SessionState::ConnectPending)
+                        {   
+                            auto dispatcher = shared_from_this();
+                            if(session->TryConnect(dispatcher) == false)
+                            {
+                                _pendingCloseSessions.push_back(sessionId);
+                                continue;
+                            }
+                        }   
+                        else
+                        {
+                            //  send enable   
+                            auto dispatcher = shared_from_this();
+                            session->OnSendable(dispatcher);
+                        }
+                    }
+                }
+            }
+
+            // if(numOfEvents == static_cast<int32>(_epollEvents.size()))
+            //     _epollEvents.resize(_epollEvents.size() * 2);
+
+            //  TEMP
+            for(auto sessionId : _pendingCloseSessions)
+            {
+                auto session = _sessionRegistry->FindSession(_shardId, sessionId);
+
+                if(session == nullptr)
+                    continue;
+
+                //  TODO
+                session->SetState(SessionState::Disconnected);
+                session->OnDisconnected();
+		        EN_LOG_INFO("{} session Disconnected", sessionId);
+
+                UnRegister(session);
+                ::close(session->GetSocketFd());
+
+                _sessionRegistry->RemoveSession(_shardId, sessionId);
+            }
+
+            _pendingCloseSessions.clear();
         }
+
+        Close();
     }
 
     bool EpollDispatcher::RegisterWakeupFd()
@@ -69,124 +174,39 @@ namespace network
         return true;
     }
 
-    bool EpollDispatcher::Register(std::shared_ptr<INetworkObject> networkObject)
+    void EpollDispatcher::Close()
+    {
+        if (_wakeupFd != INVALID_EVENT_FD_VALUE)
+		{
+			::close(_wakeupFd);
+			_wakeupFd = INVALID_EVENT_FD_VALUE;
+		}
+
+		if (_epollFd != INVALID_EPOLL_FD_VALUE)
+		{
+			::close(_epollFd);
+			_epollFd = INVALID_EPOLL_FD_VALUE;
+		}
+    }
+
+    bool EpollDispatcher::Register(std::shared_ptr<Session> session)
     {
         uint64 sessionId = 0;
 
-        if(networkObject == nullptr)
+        if(session == nullptr)
             return false;
 
         struct epoll_event epollEv;
         epollEv.events = EPOLLIN | EPOLLET | EPOLLERR | EPOLLHUP;
-        epollEv.data.ptr = networkObject.get();
+        epollEv.data.ptr = session.get();
 
-        //  현재는 Session 타입만 와서 필요없긴한데..
-        if(networkObject->GetNetworkObjectType() == NetworkObjectType::Session)
-        {   
-            auto session = std::static_pointer_cast<Session>(networkObject);
-            sessionId = session->GetSessionId();    
-            epollEv.data.u64 = sessionId;
-        }
+        sessionId = session->GetSessionId();    
+        epollEv.data.u64 = sessionId;
 
-        if(::epoll_ctl(_epollFd, EPOLL_CTL_ADD, networkObject->GetSocketFd(), &epollEv) == RESULT_ERROR)
+        if(::epoll_ctl(_epollFd, EPOLL_CTL_ADD, session->GetSocketFd(), &epollEv) == RESULT_ERROR)
             return false;
 
         return true;
-    }
-
-    DispatchResult  EpollDispatcher::Dispatch(uint32 timeoutMs)
-    {
-        int32 numOfEvents = ::epoll_wait(_epollFd, _epollEvents.data(), static_cast<int32>(_epollEvents.size()), timeoutMs); 
-
-        if(numOfEvents == 0)
-            return DispatchResult::Timeout;
-        
-        if(numOfEvents < 0)
-        {
-            if(errno == EINTR)
-                return DispatchResult::Interrupted;
-        }
-
-        if(numOfEvents > 0)
-        {
-            for(int32 i = 0 ; i < numOfEvents; i++)
-            {         
-                if(_epollEvents[i].data.fd == _wakeupFd)
-                {
-                    ConsumeEventSignal(_wakeupFd);
-
-                    //  TODO
-                    _sessionRegistry->ExecuteCommands(_shardId, *this);
-
-                    return DispatchResult::ExitRequested;
-                }
-     
-                auto networkObject = static_cast<INetworkObject*>(_epollEvents[i].data.ptr);
-
-                //  ??
-                if(networkObject == nullptr)
-                    continue;
-
-                int32 events = _epollEvents[i].events;
-                NetworkObjectType networkObjectType = networkObject->GetNetworkObjectType();
-
-                //  Error Event
-                if((events & (EPOLLERR | EPOLLHUP)) != 0)
-                {
-                    ErrorEvent errorEvent;
-                    networkObject->Dispatch(&errorEvent);
-                }
-
-                //  Read Event
-                if((events & EPOLLIN) != 0)
-                {
-                    if(networkObjectType == NetworkObjectType::Session)
-                    {
-                        auto session = static_cast<Session*>(networkObject);
-
-                        if(session)
-                        {
-                            //  TODO
-                            RecvEvent* recvEvent = engine::cnew<RecvEvent>();
-                            session->Dispatch(recvEvent);
-                        }
-                    }
-                    else
-                    {
-                        //  ???
-                    }
-                }
-
-                if((events & EPOLLOUT) != 0)
-                {
-                    if (networkObjectType == NetworkObjectType::Session)
-                    {
-                        auto session = static_cast<Session *>(networkObject);
-
-                        if (session)
-                        {
-                            if(session->GetState() == SessionState::ConnectPending)
-                            {
-                                //  connect
-                                ConnectEvent *connectEvent = engine::cnew<ConnectEvent>();
-                                session->Dispatch(connectEvent);
-                            }
-                            else
-                            {
-                                //  send enable   
-                                SendEvent* sendEvent = engine::cnew<SendEvent>();
-                                session->Dispatch(sendEvent);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if(numOfEvents == static_cast<int32>(_epollEvents.size()))
-            _epollEvents.resize(_epollEvents.size() * 2);
-
-        return DispatchResult::NetworkEventDispatched;
     }
 
     void EpollDispatcher::PostEventSignal(EventFd coreEventFd)
@@ -271,62 +291,68 @@ namespace network
             }
     }
 
-    bool EpollDispatcher::EnableConnectEvent(std::shared_ptr<INetworkObject> networkObject)
+    bool EpollDispatcher::EnableConnectEvent(std::shared_ptr<Session> session)
     {
-        return EnableEvent(networkObject);
+        return EnableEvent(session);
     }
 
-    bool EpollDispatcher::DisableConnectEvent(std::shared_ptr<INetworkObject> networkObject)
+    bool EpollDispatcher::DisableConnectEvent(std::shared_ptr<Session> session)
     {
-        return DisableEvent(networkObject);
+        return DisableEvent(session);
     }
 
-    bool EpollDispatcher::EnableSendEvent(std::shared_ptr<INetworkObject> networkObject)
+    bool EpollDispatcher::EnableSendEvent(std::shared_ptr<Session> session)
     {
-        return EnableEvent(networkObject);
+        return EnableEvent(session);
     }
 
-    bool EpollDispatcher::DisableSendEvent(std::shared_ptr<INetworkObject> networkObject)
+    bool EpollDispatcher::DisableSendEvent(std::shared_ptr<Session> session)
     {
-        return DisableEvent(networkObject);
+        return DisableEvent(session);
     }
 
     // 지금은 더 못 보냄 → 나중에 "쓸 수 있게 되면" 알려달라
-    bool EpollDispatcher::EnableEvent(const std::shared_ptr<INetworkObject>& networkObject)
+    bool EpollDispatcher::EnableEvent(const std::shared_ptr<Session>& session)
     {
-        if(networkObject == nullptr)
+        if(session == nullptr)
             return false;
 
         struct epoll_event epollEv;
         epollEv.events |= EPOLLOUT;
-        epollEv.data.ptr = networkObject.get();
+        epollEv.data.ptr = session.get();
 
-        if(::epoll_ctl(_epollFd, EPOLL_CTL_MOD, networkObject->GetSocketFd(), &epollEv) == RESULT_ERROR)
+        uint64 sessionId = session->GetSessionId();    
+        epollEv.data.u64 = sessionId;
+
+        if(::epoll_ctl(_epollFd, EPOLL_CTL_MOD, session->GetSocketFd(), &epollEv) == RESULT_ERROR)
             return false;
 
         return true;
     }
 
     // sendQueue가 비었다 = 더 보낼 게 없다
-    bool EpollDispatcher::DisableEvent(const std::shared_ptr<INetworkObject>& networkObject)
+    bool EpollDispatcher::DisableEvent(const std::shared_ptr<Session>& session)
     {
-        if(networkObject == nullptr)
+        if(session == nullptr)
             return false;
 
         struct epoll_event epollEv;
         epollEv.events  &= ~EPOLLOUT;
-        epollEv.data.ptr = networkObject.get();
+        epollEv.data.ptr = session.get();
 
-        if(::epoll_ctl(_epollFd, EPOLL_CTL_MOD, networkObject->GetSocketFd(), &epollEv) == RESULT_ERROR)
+        uint64 sessionId = session->GetSessionId();    
+        epollEv.data.u64 = sessionId;
+
+        if(::epoll_ctl(_epollFd, EPOLL_CTL_MOD, session->GetSocketFd(), &epollEv) == RESULT_ERROR)
             return false;
 
         return true;
     }
 
-    bool EpollDispatcher::UnRegister(std::shared_ptr<INetworkObject> networkObject)
+    bool EpollDispatcher::UnRegister(std::shared_ptr<Session> session)
     {   
         //  networkObject ( Session, Acceptor ) Event 해제
-        if (::epoll_ctl(_epollFd, EPOLL_CTL_DEL, networkObject->GetSocketFd(), nullptr) == RESULT_ERROR) 
+        if (::epoll_ctl(_epollFd, EPOLL_CTL_DEL, session->GetSocketFd(), nullptr) == RESULT_ERROR) 
             return false;
 
         return true;

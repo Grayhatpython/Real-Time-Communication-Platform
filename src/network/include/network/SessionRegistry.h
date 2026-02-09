@@ -3,6 +3,8 @@
 #include <functional>
 #include <memory>
 
+#include "NetworkAddress.h"
+
 namespace network
 {
     class Session;
@@ -12,7 +14,7 @@ namespace network
     public:
         struct Shard;
         using SessionFactory = std::function<std::shared_ptr<Session>()>;
-        using ShardCommand = std::function<void(struct Shard&, EpollDispatcher&)>;
+        using ShardCommand = std::function<void(struct Shard&, std::shared_ptr<EpollDispatcher>&)>;
 
         struct Shard
         {
@@ -35,10 +37,14 @@ namespace network
         };
 
     public:
-        SessionRegistry(int shardCount, SessionFactory sessionFactory);
+        SessionRegistry(int32 shardCount, SessionFactory sessionFactory);
 
         void    PostToShard(int32 shardId, ShardCommand command);
-        void    ExecuteCommands(int32 shardId, EpollDispatcher& dispatcher);
+        void    ExecuteCommands(int32 shardId, std::shared_ptr<EpollDispatcher>&dispatcher);
+
+    public:
+        void    ProcessAccepted(int32 shardId, SocketFd clientSocketFd);
+        void    ConnectAsync(int32 shardId, NetworkAddress& targetAddress);
 
     public:
         std::shared_ptr<Session>    FindSession(int32 shardId, uint64 sessionId)

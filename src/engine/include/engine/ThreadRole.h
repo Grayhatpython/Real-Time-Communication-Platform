@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CommonType.hpp"
+#include "CommonType.h"
 
 namespace engine 
 {
@@ -8,8 +8,9 @@ namespace engine
     {
         None      = 0,
         Dispatch  = 1 << 0,  // epoll dispatcher / IO thread
-        Game      = 1 << 1,  // 게임 로직 스레드
-        Worker    = 1 << 2,  // 잡 워커
+        Accept    = 1 << 1,  // Accept
+        Game      = 1 << 2,  // 게임 로직 스레드
+        Worker    = 1 << 3,  // 잡 워커
     };
 
     inline constexpr ThreadRole operator|(ThreadRole a, ThreadRole b)
