@@ -2,6 +2,7 @@
 
 namespace engine
 {
+	class Time;
 	class MemoryPool;
 	class ThreadManager;
 	class GlobalContext
@@ -24,10 +25,12 @@ namespace engine
 		void Clear();
 
 	public:
+		Time* 				GetTIme() { return _time;}
 		MemoryPool* 		GetMemoryPool() { return _memoryPool;}
 		ThreadManager* 		GetThreadManager() { return _threadManager;}
 
 	private:
+		Time*				_time = nullptr;
 		MemoryPool* 		_memoryPool = nullptr;
 		ThreadManager* 		_threadManager = nullptr;
 	};

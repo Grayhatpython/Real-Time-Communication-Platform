@@ -27,7 +27,7 @@ namespace network
 	Session::~Session()
 	{
 		EN_LOG_DEBUG("~Session");
-		
+
 		//	TEMP
 		while (_sendContextQueue.empty() == false)
 			_sendContextQueue.pop();
@@ -81,15 +81,8 @@ namespace network
 		if (GetState() != SessionState::ConnectPending)
 			return false;
 
-		int err = 0;
-		socklen_t len = sizeof(err);
-		if (::getsockopt(_socketFd, SOL_SOCKET, SO_ERROR, &err, &len) == RESULT_ERROR)
+		if(GetSocketError() == false)
 			return false;
-
-		if (err != RESULT_OK) 
-		{
-			return false;
-		}
 
 		auto session = shared_from_this();
 		dispatcher->Register(session);
@@ -156,7 +149,7 @@ namespace network
 				dispatcher->DisableSendEvent(shared_from_this());
 				dispatcher->AddPendingCloseSession(_sessionId);
 				SetState(SessionState::DisconnectPosted);
-				break;
+				return;
 			}
 
 			if(errno == EINTR)
@@ -182,7 +175,7 @@ namespace network
 			dispatcher->DisableSendEvent(shared_from_this());
 			dispatcher->AddPendingCloseSession(_sessionId);
 			SetState(SessionState::DisconnectPosted);
-			break;
+			return;
 		}
 
 		dispatcher->DisableSendEvent(shared_from_this());

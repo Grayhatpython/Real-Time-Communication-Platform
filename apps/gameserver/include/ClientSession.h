@@ -1,10 +1,12 @@
 #pragma once
 
 #include "network/Session.h"
+#include "network/SendBufferPool.h"
+
 #include "engine/BinaryWriter.h"
 #include "engine/BinaryReader.h"
 
-enum class PacketId : uint16_t
+enum class PacketId : uint16
 {
     Stat = 200,
 };
@@ -38,7 +40,7 @@ class ClientSession : public network::Session
 public:
     virtual void OnConnected() override
     {
-        
+      
     }
 
     virtual void OnDisconnected() override

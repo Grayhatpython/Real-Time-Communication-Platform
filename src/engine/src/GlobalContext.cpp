@@ -3,6 +3,7 @@
 #include "engine/MemoryPool.h"
 #include "engine/ThreadManager.h"
 #include "engine/Logger.h"
+#include "engine/Time.h"
 
 namespace engine
 {
@@ -15,6 +16,7 @@ namespace engine
 	{
 		Logger::Initialize("Core Logger");
 
+		_time = new Time();
 		_memoryPool = new MemoryPool();
 		_threadManager = new ThreadManager();
 
@@ -36,6 +38,12 @@ namespace engine
 		{
 			delete _threadManager;
 			_threadManager = nullptr;
+		}
+
+		if(_time)
+		{
+			delete _time;
+			_time = nullptr;
 		}
 
         //  async_logger 처리 및 스레드 작업 마무리

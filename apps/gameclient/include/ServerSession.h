@@ -1,6 +1,8 @@
 #pragma once
 
 #include "network/Session.h"
+#include "network/SendBufferPool.h"
+
 #include "engine/BinaryWriter.h"
 #include "engine/BinaryReader.h"
 
@@ -38,7 +40,26 @@ class ServerSession : public network::Session
 public:
     virtual void OnConnected() override
     {
-        
+        auto sendContext = std::make_shared<network::SendContext>();
+
+        uint16 size = sizeof(StatPacket);
+        auto segment = network::SendBufferArena::Allocate(size);
+
+        engine::BinaryWriter bw(segment->ptr, size);
+        bw.Write(size);
+        bw.Write(PacketId::Stat);
+        StatPacket statPacket;
+        statPacket.playerId = 10;
+        statPacket.playerHp = 200;
+        statPacket.playerMp = 100;
+        statPacket.Serialize(bw);
+
+        sendContext->sendBuffer = segment->sendBuffer;
+        sendContext->iovecBuf.iov_base = bw.GetBuffer();
+        sendContext->iovecBuf.iov_len = bw.Size();
+        sendContext->size = bw.Size();
+
+        TryFlushSend(sendContext);
     }
 
     virtual void OnDisconnected() override
