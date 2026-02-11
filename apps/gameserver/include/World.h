@@ -5,7 +5,7 @@ class ClientSession;
 class World
 {
 public:
-
+   
 public:
     void Enter(std::shared_ptr<ClientSession> newClient);
     void Leave(std::shared_ptr<ClientSession> client);

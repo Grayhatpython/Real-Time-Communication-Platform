@@ -14,7 +14,6 @@ add_library(${LIB_NAME} STATIC ${SOURCES} ${HEADERS})
 # --- 미리 컴파일된 헤더(Precompiled Headers, PCH) 설정 ---
 # PCH로 사용할 메인 헤더 파일을 지정
 # 이 파일은 일반적으로 프로젝트의 include 디렉토리 내에 위치하며, 자주 사용되는 모든 헤더들을 포함
-set(GAMELOGIC_PCH_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/include/gamelogic/GameLogicPch.h")
 target_precompile_headers(${LIB_NAME} PRIVATE
   "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/include/gamelogic/GameLogicPch.h>"
 )

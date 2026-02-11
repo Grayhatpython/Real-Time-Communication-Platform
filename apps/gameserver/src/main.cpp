@@ -14,17 +14,19 @@
 #include "network/SendBufferPool.h"
 #include "network/SessionRegistry.h"
 
+#include "World.h"
 
 int main()
 {
     {
         engine::GlobalContext::GetInstance().Initialize();
+        World* world = new World();
         
         engine::ThreadManager* threadManager = engine::GlobalContext::GetInstance().GetThreadManager();
 
         //  SessionFactory 
-        std::function<std::shared_ptr<network::Session>(void)> sessionFactory = []() {
-            return engine::MakeShared<ClientSession>();
+        std::function<std::shared_ptr<network::Session>(void)> sessionFactory = [world]() {
+            return engine::MakeShared<ClientSession>(world);
         };
         
         std::unique_ptr<network::SessionRegistry> sessionRegistry = std::make_unique<network::SessionRegistry>(2, sessionFactory);
@@ -82,6 +84,12 @@ int main()
             server->Stop();
             threadManager->StopAllAndJoin();
             sessionRegistry.reset();
+
+            if(world)
+            {
+                delete world;
+                world = nullptr;
+            }
 
             engine::GlobalContext::GetInstance().Clear();
         }

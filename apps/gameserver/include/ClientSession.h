@@ -6,13 +6,15 @@
 class ClientSession : public network::Session
 {
 public:
-    ~ClientSession()
+    ClientSession(World* world)
+        : _world(world)
     {
-        if(_world)
-        {
-            delete _world;
-            _world = nullptr;
-        }
+
+    }
+
+    virtual ~ClientSession()
+    {
+        
     }
     
 public:
@@ -39,6 +41,5 @@ public:
     }
 
 private:
-    //  TEMP
     World* _world = nullptr;
 };

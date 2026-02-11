@@ -5,6 +5,8 @@
 #include "gamelogic/Math.h"
 #include "gamelogic/Protocol.h"
 
+#include "engine/Logger.h"
+
 void World::Enter(std::shared_ptr<ClientSession> newClient)
 {
     const ActorNetworkId newActorNetworkId = _generateActorNetworkId++;
@@ -42,6 +44,8 @@ void World::Enter(std::shared_ptr<ClientSession> newClient)
         const auto& newShip = _players[newActorNetworkId].ship;
         BroadcastSpawn(newShip);
     }
+
+    EN_LOG_DEBUG("[Client Actor {} Enter]",newActorNetworkId);
 }
 
 void World::Leave(std::shared_ptr<ClientSession> client)
@@ -58,6 +62,9 @@ void World::Leave(std::shared_ptr<ClientSession> client)
 
     // 남은 클라들에게 디스폰 브로드캐스트
     BroadcastDespawn(actorNetworkId);
+
+    EN_LOG_DEBUG("[Client Actor {} Leave]",actorNetworkId);
+
 }
 
 void World::BroadcastSpawn(const std::shared_ptr<gamelogic::Ship>& ship)

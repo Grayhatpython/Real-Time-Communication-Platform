@@ -6,7 +6,6 @@
 #include <functional>
 #include <unordered_map>
 
+#include "engine/CommonType.h"
 #include "gamelogic/Types.h"
 #include "gamelogic/Math.h"
-
-#include "engine/CommonType.h"
