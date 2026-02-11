@@ -14,8 +14,9 @@ add_library(${LIB_NAME} STATIC ${SOURCES} ${HEADERS})
 # --- 미리 컴파일된 헤더(Precompiled Headers, PCH) 설정 ---
 # PCH로 사용할 메인 헤더 파일을 지정
 # 이 파일은 일반적으로 프로젝트의 include 디렉토리 내에 위치하며, 자주 사용되는 모든 헤더들을 포함
-set(ENGINE_PCH_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/include/engine/EnginePch.h")
-target_precompile_headers(${LIB_NAME} PRIVATE ${ENGINE_PCH_HEADER})
+target_precompile_headers(${LIB_NAME} PRIVATE
+  "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/include/engine/EnginePch.h>"
+)
 
 # 'LIB_NAME' (engine) 라이브러리가 포함할(include) 디렉토리 경로를 설정
 # PUBLIC 키워드는 이 라이브러리를 사용하는 다른 타겟(예: APP_NAME "Server")도 이 인클루드 경로를 상속받아 사용할 수 있음을 의미

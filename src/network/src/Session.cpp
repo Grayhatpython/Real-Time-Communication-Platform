@@ -1,5 +1,6 @@
 #include "network/NetworkPch.h"
 #include "network/Session.h"
+#include "network/PacketHeader.h"
 #include "network/NetworkUtils.h"
 #include "network/SessionRegistry.h"
 #include "network/NetworkDispatcher.h"
@@ -7,15 +8,6 @@
 #include "engine/Logger.h"
 #include "engine/MemoryPool.h"
 #include "engine/BinaryReader.h"
-
-//  TEMP
-#pragma pack(push, 1)
-struct PacketHeader
-{
-    uint16 size;
-    uint16 id;
-};
-#pragma pack(pop)
 
 namespace network
 {

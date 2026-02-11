@@ -124,21 +124,23 @@ Windows IOCP 모델과 Linux epoll 모델의 차이를 비교·이해하고,
 sudo apt update
 sudo apt install -y build-essential cmake ninja-build gdb
 
-### Optional: Monitoring Server Dependencies
+### Optional: Monitoring Server Dependencies ( Opengl - Imgui )
+### Optional: Game Client Dependencies ( SDL2 : TEMP)
 
 > The following packages are required **only for the monitoring server**
 > that uses ImGui with OpenGL.
 > They are **not required for server and client deployments**.
 
 ```bash
+sudo apt install -y libsdl2-dev
+sudo apt install -y libsdl2-image-dev
+
 sudo apt install -y libgl1-mesa-dev
 sudo apt install -y libx11-dev libxrandr-dev libxi-dev libxinerama-dev libxcursor-dev
-
 
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
 cmake --build build
 
 
-./build/Server/Server
-./build/DummyClient/DummyClient
-./build/MonitoringServer/MonitoringServer
+./build/apps/gameserver/gameserver
+./build/apps/gameclient/gameclient

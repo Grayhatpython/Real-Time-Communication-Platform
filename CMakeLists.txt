@@ -44,6 +44,10 @@ add_subdirectory(src/engine)
 # 이 명령으로 network 라이브러리가 빌드 설정에 추가
 add_subdirectory(src/network)
 
+# 'gamelogic' 하위 디렉토리에 있는 CMakeLists.txt 파일을 포함시키고 처리
+# 이 명령으로 gamelogic 라이브러리가 빌드 설정에 추가
+add_subdirectory(src/gamelogic)
+
 # 'gameserver' 하위 디렉토리에 있는 CMakeLists.txt 파일을 포함시키고 처리
 # 이 명령으로 gameserver 실행 파일이 빌드 설정에 추가됩니다.
 add_subdirectory(apps/gameserver) 
@@ -51,10 +55,6 @@ add_subdirectory(apps/gameserver)
 # 'gameclient' 하위 디렉토리에 있는 CMakeLists.txt 파일을 포함시키고 처리
 # 이 명령으로 gameclient 실행 파일이 빌드 설정에 추가됩니다.
 add_subdirectory(apps/gameclient) 
-
-# 'DummyClient' 하위 디렉토리에 있는 CMakeLists.txt 파일을 포함시키고 처리
-# 이 명령으로 Server 실행 파일이 빌드 설정에 추가됩니다.
-# add_subdirectory(DummyClient) 
 
 
 # --- 빌드 명령어 가이드 ---

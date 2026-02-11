@@ -1,62 +1,36 @@
 #pragma once
 
 #include "network/Session.h"
-#include "network/SendBufferPool.h"
-
-#include "engine/BinaryWriter.h"
-#include "engine/BinaryReader.h"
-
-enum class PacketId : uint16
-{
-    Stat = 200,
-};
-
-#pragma pack(push, 1)
-struct StatPacket : PacketHeader
-{
-    uint64 playerId;
-    uint32 playerHp;
-    uint32 playerMp;
-
-    bool Serialize(engine::BinaryWriter& bw) const
-    {
-        return bw.Write<uint64>(playerId)
-            && bw.Write<uint32>(playerHp)
-            && bw.Write<uint32>(playerMp);
-    }
-
-    bool DeSerialize(engine::BinaryReader& br)
-    {
-        return br.Read(playerId)
-            && br.Read(playerHp)
-            && br.Read(playerMp);
-    }
-};
-#pragma pack(pop)
-
+#include "World.h"
 
 class ClientSession : public network::Session
 {
 public:
+    ~ClientSession()
+    {
+        if(_world)
+        {
+            delete _world;
+            _world = nullptr;
+        }
+    }
+    
+public:
     virtual void OnConnected() override
     {
-      
+        auto clientSession = std::static_pointer_cast<ClientSession>(shared_from_this());
+        _world->Enter(clientSession);
     }
 
     virtual void OnDisconnected() override
     {
-
+        auto clientSession = std::static_pointer_cast<ClientSession>(shared_from_this());
+        _world->Leave(clientSession);   
     }
 
     virtual void OnRecv(BYTE* buffer, int32 numOfBytes) override
     {
-        engine::BinaryReader br(buffer, numOfBytes);
-        br.MoveReadPos(sizeof(PacketHeader));
-
-        StatPacket statPacket;
-        statPacket.DeSerialize(br);
-
-        std::cout << statPacket.playerId << " " << statPacket.playerMp << " " << std::endl;
+      
     }
 
     virtual void OnSend() override
@@ -65,5 +39,6 @@ public:
     }
 
 private:
-
+    //  TEMP
+    World* _world = nullptr;
 };

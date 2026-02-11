@@ -1,65 +1,19 @@
 #pragma once
 
 #include "network/Session.h"
-#include "network/SendBufferPool.h"
 
-#include "engine/BinaryWriter.h"
-#include "engine/BinaryReader.h"
+#include "gamelogic/Ship.h"
+#include "gamelogic/Protocol.h"
+#include "gamelogic/Math.h"
 
-enum class PacketId : uint16_t
-{
-    Stat = 200,
-};
-
-#pragma pack(push, 1)
-struct StatPacket : PacketHeader
-{
-    uint64 playerId;
-    uint32 playerHp;
-    uint32 playerMp;
-
-    bool Serialize(engine::BinaryWriter& bw) const
-    {
-        return bw.Write<uint64>(playerId)
-            && bw.Write<uint32>(playerHp)
-            && bw.Write<uint32>(playerMp);
-    }
-
-    bool DeSerialize(engine::BinaryReader& br)
-    {
-        return br.Read(playerId)
-            && br.Read(playerHp)
-            && br.Read(playerMp);
-    }
-};
-#pragma pack(pop)
-
+#include "engine/Logger.h"
 
 class ServerSession : public network::Session
 {
 public:
     virtual void OnConnected() override
     {
-        auto sendContext = std::make_shared<network::SendContext>();
-
-        uint16 size = sizeof(StatPacket);
-        auto segment = network::SendBufferArena::Allocate(size);
-
-        engine::BinaryWriter bw(segment->ptr, size);
-        bw.Write(size);
-        bw.Write(PacketId::Stat);
-        StatPacket statPacket;
-        statPacket.playerId = 10;
-        statPacket.playerHp = 200;
-        statPacket.playerMp = 100;
-        statPacket.Serialize(bw);
-
-        sendContext->sendBuffer = segment->sendBuffer;
-        sendContext->iovecBuf.iov_base = bw.GetBuffer();
-        sendContext->iovecBuf.iov_len = bw.Size();
-        sendContext->size = bw.Size();
-
-        TryFlushSend(sendContext);
+       
     }
 
     virtual void OnDisconnected() override
@@ -70,12 +24,58 @@ public:
     virtual void OnRecv(BYTE* buffer, int32 numOfBytes) override
     {
         engine::BinaryReader br(buffer, numOfBytes);
-        br.MoveReadPos(sizeof(PacketHeader));
 
-        StatPacket statPacket;
-        statPacket.DeSerialize(br);
+        uint16 pktSize = 0;
+        Protocol::PacketId pktId;
+        br.Read(pktSize);
+        br.Read(pktId);
 
-        std::cout << statPacket.playerId << " " << statPacket.playerMp << " " << std::endl;
+        switch (pktId)
+        {
+        case Protocol::PacketId::S2C_Spawn:
+        {
+            Protocol::SpawnPacket spawnPacket;
+            if (spawnPacket.DeSerialize(br) == false) 
+                return;
+
+            // 이미 있으면 무시(중복 스폰 방지)
+            if (_ships.find(spawnPacket.actorNetworkId) != _ships.end())
+                return;
+
+            // 로컬 Ship 생성
+            std::shared_ptr<gamelogic::Ship> ship = std::make_shared<gamelogic::Ship>();
+            ship->SetActorNetworkId(spawnPacket.actorNetworkId);
+            ship->SetPosition(Vector2{spawnPacket.positionX, spawnPacket.positionY});
+            ship->SetRotation(spawnPacket.rotation);
+            ship->SetScale(spawnPacket.scale);
+
+            _ships.emplace(spawnPacket.actorNetworkId, std::move(ship));
+
+            EN_LOG_DEBUG("[Client] Spawn Ship id = {}",spawnPacket.actorNetworkId);
+
+            break;
+        }
+
+        case Protocol::PacketId::S2C_Despawn:
+        {
+            Protocol::DespawnPacket despawnPacket;
+            if (despawnPacket.DeSerialize(br) == false) 
+                return;
+
+            auto findIt = _ships.find(despawnPacket.actorNetworkId);
+            if (findIt == _ships.end())
+                return;
+
+            _ships.erase(findIt);
+
+            EN_LOG_DEBUG("[Client] Spawn Ship id = {}",despawnPacket.actorNetworkId);
+
+            break;
+        }
+
+        default:
+            break;
+        }
     }
 
     virtual void OnSend() override
@@ -84,5 +84,5 @@ public:
     }
 
 private:
-
+    std::unordered_map<ActorNetworkId, std::shared_ptr<gamelogic::Ship>>_ships;
 };

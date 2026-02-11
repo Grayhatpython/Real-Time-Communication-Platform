@@ -14,9 +14,9 @@
 #include "network/SendBufferPool.h"
 #include "network/SessionRegistry.h"
 
-
 int main()
 {
+
     {
         engine::GlobalContext::GetInstance().Initialize();
         

@@ -14,8 +14,18 @@ add_executable(${APP_NAME} ${SOURCES} ${HEADERS})
 # --- 미리 컴파일된 헤더(Precompiled Headers, PCH) 설정 ---
 # PCH로 사용할 메인 헤더 파일을 지정
 # 이 파일은 일반적으로 프로젝트의 include 디렉토리 내에 위치하며, 자주 사용되는 모든 헤더들을 포함
-set(CLIENT_PCH_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/include/Pch.h")
-target_precompile_headers(${APP_NAME} PRIVATE ${CLIENT_PCH_HEADER})
+target_precompile_headers(${APP_NAME} PRIVATE
+  "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/include/Pch.h>"
+)
+
+
+find_package(SDL2 REQUIRED)
+find_package(SDL2_image REQUIRED)
+
+target_link_libraries(${APP_NAME} PRIVATE 
+    SDL2::SDL2 
+    SDL2_image::SDL2_image
+)
 
 # 생성된 실행 파일(`APP_NAME` = gameclient)에 필요한 라이브러리들을 링크(연결)
 # PRIVATE 키워드는 이 라이브러리들이 `APP_NAME`이라는 타겟 자체에만 필요하고,
@@ -23,9 +33,8 @@ target_precompile_headers(${APP_NAME} PRIVATE ${CLIENT_PCH_HEADER})
 target_link_libraries(${APP_NAME} PRIVATE 
     Engine
     Network
-    # GameLogic
+    GameLogic
 )
-
 
 # 타겟에 인클루드 디렉토리 추가
 target_include_directories(${APP_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
