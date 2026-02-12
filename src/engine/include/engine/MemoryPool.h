@@ -1,4 +1,6 @@
 #pragma once
+#include <array>
+#include <vector>
 #include "engine/GlobalContext.h"
 
 namespace engine

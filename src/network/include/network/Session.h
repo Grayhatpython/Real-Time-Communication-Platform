@@ -80,8 +80,6 @@ namespace network
         engine::Lock								_lock;
         std::queue<std::shared_ptr<SendContext>>	_sendContextQueue;
         StreamBuffer								_streamBuffer{};
-
-
     };
 
 }
