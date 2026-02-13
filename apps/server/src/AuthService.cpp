@@ -10,11 +10,19 @@
 AuthService::AuthService(SqliteDb *db)
     :   _db(db)
 {
-    //  libsodium 초기화    
-    sodium_init();
+ 
 }
 
-bool AuthService::CreateUser(const std::string &username, const std::string &password, uint64 &userId, AuthFailReason &authFailReason)
+bool AuthService::Initialize()
+{
+    //  libsodium 초기화    
+    if (sodium_init() < 0)
+        return false;
+
+    return true;
+}
+
+bool AuthService::RegisterUser(const std::string &username, const std::string &password, uint64 &userId, AuthFailReason &authFailReason)
 {
     std::string pwHashString;
     if(HashPassword(password, pwHashString) == false)
@@ -23,17 +31,16 @@ bool AuthService::CreateUser(const std::string &username, const std::string &pas
         return false;
     }
 
-    if(BeginTransaction() == false)
+    sqlite3* db = _db->GetDBHandle();
+    if(db == nullptr)
     {
         authFailReason = AuthFailReason::DbError;
         return false;
     }
 
-    sqlite3* db = _db->GetDBHandle();
-    if(db == nullptr)
+    if(BeginTransaction() == false)
     {
         authFailReason = AuthFailReason::DbError;
-        RollbackTransaction();
         return false;
     }
 
@@ -66,12 +73,162 @@ bool AuthService::CreateUser(const std::string &username, const std::string &pas
 
 bool AuthService::Login(const std::string &username, const std::string &password, LoginResult &loginResult, AuthFailReason &authFailReason)
 {
-    return false;
+    sqlite3* db = _db->GetDBHandle();
+    if(db == nullptr)
+    {
+        authFailReason = AuthFailReason::DbError;
+        return false;
+    }
+
+    uint64 userId = 0;
+    std::string pwHashString;
+
+    {
+        SQLiteStmt stmt(db,"SELECT user_id, hashed_password FROM users WHERE username = ?;");
+        if(stmt.BindText(1, username) == false)
+        {
+            authFailReason = AuthFailReason::DbError;
+            return false;
+        }
+
+        if(stmt.StepRow() == false)
+        {
+            authFailReason = AuthFailReason::UserNotFound;
+            return false;
+        }
+
+        userId = static_cast<uint64>(stmt.GetInt64(0));
+        pwHashString = stmt.GetText(1);
+
+        if(VerifyPassword(password, pwHashString) == false)
+        {
+            authFailReason = AuthFailReason::WrongPassword;
+            return false;
+        }
+    }
+
+    if(BeginTransaction() == false)
+    {
+        authFailReason = AuthFailReason::DbError;
+        return false;
+    }
+
+    {
+        SQLiteStmt stmt(db,"UPDATE sessions SET revoked = 1 WHERE user_id = ?;");
+        if(stmt.BindInt64(1, static_cast<int64>(userId)) == false)
+        {
+            authFailReason = AuthFailReason::DbError;
+            RollbackTransaction();
+            return false;
+        }
+        
+        if(stmt.StepDone() == false)
+        {
+            authFailReason = AuthFailReason::DbError;
+            RollbackTransaction();
+            return false;
+        }
+    }
+
+    const std::string token = MakeRandomToken();
+    const int64 now = NowSecond();
+    const int64 expires = now + 7 * 24 * 60 * 60; // 7일
+
+    {
+        SQLiteStmt stmt(db,"INSERT INTO sessions(token, user_id, expires_at, last_seen_at, revoked) VALUES(?, ?, ?, ?, 0);");
+        if(stmt.BindText(1, token) == false || stmt.BindInt64(2, static_cast<int64>(userId)) == false || stmt.BindInt64(3, expires) == false || stmt.BindInt64(4, now) == false)
+        {
+            authFailReason = AuthFailReason::DbError;
+            RollbackTransaction();
+            return false;
+        }
+        
+        if(stmt.StepDone() == false)
+        {
+            authFailReason = AuthFailReason::UserNotFound;
+            RollbackTransaction();
+            return false;
+        }
+    }
+
+    if(CommitTransaction() == false)
+    {
+        authFailReason = AuthFailReason::DbError;
+        RollbackTransaction();
+        return false;
+    }
+
+    loginResult.userId;
+    loginResult.token = token;
+    loginResult.expiresAt = expires;
+
+    return true;
 }
 
-bool AuthService::Reconnect(const std::string &token, uint64 &userId, AuthFailReason &authFailReason)
+bool AuthService::Resume(const std::string &token, uint64 &userId, AuthFailReason &authFailReason)
 {
-    return false;
+    sqlite3* db = _db->GetDBHandle();
+    if(db == nullptr)
+    {
+        authFailReason = AuthFailReason::DbError;
+        return false;
+    }
+
+    const int64 now = NowSecond();
+
+    int64 getUserId = 0;
+    int64 expiresAt = 0;
+    int32 revoked = 0;
+
+    {
+        SQLiteStmt stmt(db, "SELECT user_id, expires_at, revoked FROM sessions WHERE token = ?;");
+        if(stmt.BindText(1, token) == false)
+        {
+            authFailReason = AuthFailReason::DbError;
+            return false;
+        }
+
+        if(stmt.StepRow() == false)
+        {
+            authFailReason = AuthFailReason::TokenInvalid;
+            return false;
+        }
+
+        getUserId = stmt.GetInt64(0);
+        expiresAt = stmt.GetInt64(1);
+        revoked = stmt.GetInt(2);
+    }
+
+    if (revoked != 0) 
+    {
+        authFailReason = AuthFailReason::TokenInvalid;
+        return false;
+    }
+
+    if (expiresAt <= now) 
+    {
+        authFailReason = AuthFailReason::TokenExpired;
+        return false;
+    }
+
+    {
+        SQLiteStmt stmt(db, "UPDATE sessions SET last_seen_at = ? WHERE token = ?;");
+        if(stmt.BindInt64(1, now) == false || stmt.BindText(2, token) == false)
+        {
+            authFailReason = AuthFailReason::DbError;
+            return false;
+        }
+        
+        if(stmt.StepDone() == false)
+        {
+            authFailReason = AuthFailReason::DbError;
+            return false;
+        }
+    }
+
+    userId = static_cast<uint64>(getUserId);
+
+    return true;
 }
 
 int64 AuthService::NowSecond() const

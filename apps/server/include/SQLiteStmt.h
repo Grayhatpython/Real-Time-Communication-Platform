@@ -37,16 +37,3 @@ private:
     bool            _isPrepared = false;
 };
 
-class SQLiteTransaction 
-{
-public:
-    SQLiteTransaction(sqlite3* db);
-    ~SQLiteTransaction();
-
-public:
-    void Commit();
-
-private:
-    sqlite3*    _db = nullptr;
-    bool        _isCommitted = false;
-};

@@ -41,7 +41,7 @@ namespace network
     class SendBufferArena
     {
     public:
-        static std::shared_ptr<SendBufferSegment> Allocate(int32 size);
+        static std::shared_ptr<SendBufferSegment> Allocate(uint32 size);
 
     public:
         static int32 GetCurrentSendBufferRemainSize();

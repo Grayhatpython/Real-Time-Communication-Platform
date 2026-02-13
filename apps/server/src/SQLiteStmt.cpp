@@ -86,7 +86,7 @@ bool SQLiteStmt::StepRow()
 {
     if (IsPrepared() == false) 
         return false;
-    return sqlite3_step(_stmt) == SQLITE_ROW;
+    return sqlite3_step(_stmt) == SQLITE_ROW ? true : false;
 }
 
 bool SQLiteStmt::StepDone()
@@ -96,24 +96,3 @@ bool SQLiteStmt::StepDone()
     return sqlite3_step(_stmt) == SQLITE_DONE;
 }
 
-SQLiteTransaction::SQLiteTransaction(sqlite3* db) : _db(db) 
-{
-    sqlite3_exec(_db, "BEGIN IMMEDIATE;", nullptr, nullptr, nullptr);
-}
-
-void SQLiteTransaction::Commit() 
-{
-    if (_isCommitted == false) 
-    {
-        sqlite3_exec(_db, "COMMIT;", nullptr, nullptr, nullptr);
-        _isCommitted = true;
-    }
-}
-
-SQLiteTransaction::~SQLiteTransaction() 
-{
-    if (_isCommitted == false) 
-    {
-        sqlite3_exec(_db, "ROLLBACK;", nullptr, nullptr, nullptr);
-    }
-}

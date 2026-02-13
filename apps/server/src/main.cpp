@@ -15,15 +15,32 @@
 #include "network/SessionRegistry.h"
 
 #include "AuthDb.h"
+#include "AuthService.h"
 
 int main()
 {
     {
-        AuthDb authDb;
+        AuthDb* authDb = new AuthDb();
         //  TEMP
-        auto ret = authDb.Initialize("./apps/server/data/auth.db", "./apps/server/db/schema_auth.sql");
+        auto ret = authDb->Initialize("./apps/server/data/auth.db", "./apps/server/db/schema_auth.sql");
 
-        int a = 3;
+        AuthService auth(authDb->GetDBHandle());
+        auth.Initialize();
+
+        AuthFailReason fail;
+        uint64 userid;
+
+        auth.RegisterUser("test", "pw1234", userid, fail);
+
+        LoginResult login;
+        if (auth.Login("test", "pw1234", login, fail) == true) 
+        {
+            uint64 userId2 = 0;
+            if (auth.Resume(login.token, userId2, fail) == true)  
+            {
+                // uid2 == uid 확인
+            }
+        }
     }
 
     {

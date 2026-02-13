@@ -6,7 +6,7 @@ PRAGMA temp_store = MEMORY;
 CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,
-    hashed_password BLOB NOT NULL,
+    hashed_password TEXT NOT NULL,
     created_at INTEGER NOT NULL
 );
 

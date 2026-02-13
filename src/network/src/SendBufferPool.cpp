@@ -80,7 +80,7 @@ namespace network
         EN_LOG_DEBUG("SendBuffer Pool Clear");
     }
 
-    std::shared_ptr<SendBufferSegment> SendBufferArena::Allocate(int32 size)
+    std::shared_ptr<SendBufferSegment> SendBufferArena::Allocate(uint32 size)
     {
         if (S_LCurrentSendBuffer == nullptr || S_LCurrentSendBuffer->CanUseSize(size) == false)
             SwapSendBuffer();
