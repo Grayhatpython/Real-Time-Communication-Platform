@@ -1,7 +1,7 @@
 # 🐧 Real-Time Communication Platform (C++)
 
 본 프로젝트는 C++로 직접 설계/구현한 네트워크 엔진을 기반으로, 서버-클라이언트 구조의 실시간 텍스트 커뮤니케이션 플랫폼을 구축하는 것이 목표입니다.
-게임 개발이 아니라 상용 서비스 수준의 네트워크/서버 아키텍처를 지향하며, 인증/세션/메시징/확장성/성능을 중심으로 단계적으로 완성도를 높여갑니다.
+상용 서비스 수준의 네트워크/서버 아키텍처를 지향하며, 인증/세션/메시징/확장성/성능을 중심으로 단계적으로 완성도를 높여갑니다.
 
 - 서버/클라이언트 모두 동일한 네트워크 엔진 사용
 - 패킷 기반 프로토콜로 통신 (길이 + PacketId + Payload)
@@ -175,8 +175,6 @@ sudo apt update
 sudo apt install -y build-essential cmake ninja-build gdb
 
 ### Optional: Client Dependencies ( Opengl - Imgui )
-
-```bash
 
 sudo apt install -y libgl1-mesa-dev
 sudo apt install -y libx11-dev libxrandr-dev libxi-dev libxinerama-dev libxcursor-dev
