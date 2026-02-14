@@ -1,120 +1,170 @@
-# 🐧 epoll 기반 Linux Network Server (WIP)
+# 🐧 Real-Time Communication Platform (C++)
 
-본 프로젝트는 **Linux 환경에서 epoll 기반 네트워크 서버를 직접 설계·구현 중인 개인 학습 프로젝트**입니다.  
-Windows IOCP 모델과 Linux epoll 모델의 차이를 비교·이해하고,  
-**epoll 특성에 맞는 이벤트 디스패처와 서버 루프 구조를 단계적으로 구현**하는 것을 목표로 하고 있습니다.
+본 프로젝트는 C++로 직접 설계/구현한 네트워크 엔진을 기반으로, 서버-클라이언트 구조의 실시간 텍스트 커뮤니케이션 플랫폼을 구축하는 것이 목표입니다.
+게임 개발이 아니라 상용 서비스 수준의 네트워크/서버 아키텍처를 지향하며, 인증/세션/메시징/확장성/성능을 중심으로 단계적으로 완성도를 높여갑니다.
 
-> 🚧 **Work In Progress**  
-> 현재 서버 코어 구조 및 epoll 이벤트 분기 로직을 중심으로 설계·구현을 진행 중입니다.
+- 서버/클라이언트 모두 동일한 네트워크 엔진 사용
+- 패킷 기반 프로토콜로 통신 (길이 + PacketId + Payload)
+- 클라이언트 UI는 ImGui로 구성
+- 인증 데이터는 SQLite로 관리 (향후 DB 워커/확장 고려)
 
 ---
 
 ## 🎯 프로젝트 목적
 
-- 커널 이벤트 통지 + 사용자 공간 제어 중심 설계
+- 확장 가능한 프로토콜/핸들러/스레딩 모델 기반 확보
 - recv / send 시점을 서버 로직이 명확히 통제
 - 고부하 환경에서도 예측 가능한 흐름 유지
-- 멀티스레드 확장을 고려한 구조
+- 실서비스에서 필요한 요소(인증, 세션, 접근 제어, 로깅, 안정성)를 MVP부터 체계적으로 반영
 
 ---
 
-## 🧠 epoll 기반 서버 설계 개요 (진행 중)
+## 🧠 핵심 기능(현재 진행 상태)
 
-### 1️⃣ epoll_ctl – 이벤트 관심사 등록
-- 소켓 생성 후 epoll 인스턴스에 등록
-- 기본적으로 `EPOLLIN | EPOLLET` 기반 설계
-- 필요 시 송신 상황에 따라 `EPOLLOUT` 동적 등록
+### 1️⃣ 네트워크 엔진 공통화
+서버와 클라이언트가 동일한 엔진을 사용하며, 다음을 제공:
+- Session 기반 연결 관리
+- SendBufferArena / SendContext 기반 송신 파이프라인
+- BinaryReader / BinaryWriter 기반 직렬화/역직렬화
+- 패킷 단위로 완성된 데이터가 OnRecv(buffer, size)로 전달되는 구조
 
-### 2️⃣ epoll_wait – 이벤트 대기
-- 커널이 소켓 상태 변화를 감지할 때까지 블로킹
-- 이벤트 발생 시 준비된 소켓 목록 반환
-- 타임아웃 및 종료 조건 처리 가능
+### 2️⃣ 프로토콜 구조
+패킷 포맷을 단순하고 명확하게 고정
+- uint16 size (헤더 포함 전체 크기)
+- uint16 packetId
+- payload (직렬화 데이터)
+이를 기반으로 클라이언트/서버 모두 동일하게 파싱 및 디스패치합니다.
 
-### 3️⃣ Event Dispatch – 이벤트 분기 처리
-- epoll_wait 결과를 기반으로 이벤트 유형 분기
-- 단순 recv/send 호출이 아닌 서버 로직 중심 디스패치
+### 3️⃣ 패킷 디스패치(핸들러) 구조
+PacketId를 기준으로 패킷을 라우팅하는 Dispatcher를 구성:
+- OnRecv에서 헤더 검증 후 payload BinaryReader 생성
+- Dispatcher가 PacketId → Deserialize → packet Handler 순서로 처리
+- 잘못된 패킷/미등록 PacketId는 정책에 따라 연결 종료 등 방어 처리
 
-### 4️⃣ recv / send – 실제 I/O 수행
-- Non-blocking 소켓 기반 직접 I/O 수행
-- EAGAIN / EWOULDBLOCK 처리 필수
-- 부분 송신/수신을 고려한 버퍼 설계
-
-### 🔹 현재 구현 상태
-- [ v ]epoll 기반 이벤트 루프 구조
-- [ v ]non-blocking socket 처리
-- [ v ]이벤트 디스패처 구조
-- [ v ]송수신 처리
-- [ v ]로그 전용 스레드 및 I/O 전용 스레드 ( epoll Dispatcher ) 분리 
-- 패킷 직렬화 및 패킷 핸들러
-- 부하 테스트 및 병목 분석
-
----
-
-#### 🧪 테스트
-
-1. 서버 프로세스 실행
-2. Logger 및 Thread Local 초기화
-3. NetworkCore 초기화 및 포트 리스닝 시작
-4. Dispatcher(NetworkDispatch) 스레드 기동
-5. 테스트 클라이언트 접속 시도
-6. Session 생성 및 `ProcessConnect()` 처리 확인
+### 4️⃣ 인증/세션(초기 MVP)
+SQLite 기반 인증 DB를 구성하고, 다음 플로우를 구현 중:
+- Register: 사용자 생성(비밀번호 해시 저장)
+- Login: 자격 증명 검증 후 세션 토큰 발급/저장
+- Resume: 토큰 기반 재접속(자동 로그인) 검증
+토큰은 서버(DB)에 저장되며, 클라이언트는 토큰을 로컬에 저장해 재접속 시 사용합니다.
 
 ---
 
-#### 📄 실행 로그
+## 서버(Server) 아키텍처
 
-<img width="1554" height="126" alt="스크린샷 2026-01-29 232813" src="https://github.com/user-attachments/assets/2445d8d7-cedd-41e8-ab43-814fe96adcbd" />
+서버는 **Accept 전용 스레드**, **멀티 Dispatch 스레드(per-thread epoll)**, **DB Worker 단일 스레드**로 구성됩니다.
 
-<img width="1556" height="130" alt="스크린샷 2026-01-29 232728" src="https://github.com/user-attachments/assets/bdb1e0ef-f69b-4755-9f69-d2636c228947" />
+### 1) 스레드 모델
+
+#### A. Accept Thread (1개)
+- 리스닝 소켓을 감시하는 **전용 epoll 인스턴스**를 보유합니다.
+- 신규 연결을 `accept()` 처리합니다.
+- accept 성공 시, 연결 결과를 **Dispatch Thread 그룹 중 하나로 전달**합니다.  
+
+#### B. Dispatch Threads (N개)
+각 Dispatch 스레드는:
+- **자기 전용 epoll 인스턴스**를 보유합니다.
+- 자신에게 할당된 **여러 개의 Session**을 관리합니다.
+- 해당 Session들에 대해 네트워크 I/O 파이프라인을 전담합니다.
+  - `epoll_wait`
+  - recv 이벤트 처리
+  - send flush(큐 기반)
+  - 세션 라이프사이클 관리(생성/종료/타임아웃 등)
+
+> **설계 의도:** 네트워크 I/O 관점에서 Session은 특정 Dispatch 스레드가 사실상 *단독 소유*하도록 구성하여, 락 경합을 줄이고 책임 경계를 명확히 합니다.
+
+#### C. DB Worker Thread (1개)
+- DB 접근을 **단일 스레드에서 직렬화**합니다(특히 SQLite에 적합).
+- 현재는 **Auth(가입/로그인/토큰 검증)** 업무를 처리합니다.
+- 향후 메시지 저장/검색, 권한/역할, 감사 로그 등으로 확장 가능한 구조를 목표로 합니다.
+- Dispatch 스레드가 DB Worker에 작업을 큐잉하고, 결과를 받아 응답을 전송하는 형태입니다.
 
 ---
 
-#### 🧠 로그 해석
+### 2) 연결 라이프사이클(서버)
 
-| 로그 키워드 | 의미 |
-|---|---|
-| `Logger initialized` | spdlog 로거 초기화 완료 |
-| `[Main] Initialize Thread Local` | 메인 스레드 Thread Local 초기화 완료 |
-| `Network Core Initialized` | 네트워크 코어 구성 완료 |
-| `Server port:8000 Started` | 서버 리스닝 시작(포트 8000) |
-| `[NetworkDispatch] Thread Started` | Dispatcher 스레드 정상 기동 |
-| `Session is Connected` | 클라이언트 접속 및 세션 생성/연결 처리 성공 |
+1. **Accept Thread**가 신규 연결을 accept
+2. accept 결과를 특정 **Dispatch Thread**로 전달(handoff)
+3. 해당 Dispatch Thread가:
+   - Session 객체 생성
+   - 자신의 epoll에 등록
+   - 이후 네트워크 이벤트를 전담 처리
+4. 패킷이 완성되면 `OnRecv(buffer, size)` 호출 → 파싱/디스패치 → 핸들러 실행
+5. DB 처리가 필요하면 Dispatch → DB Worker로 job enqueue
+6. DB Worker 결과를 기반으로 Dispatch/Session에서 응답 전송
 
 ---
 
-#### ✅ 검증 결과 요약
+### 3) 패킷 처리 파이프라인(서버)
 
-- 서버가 정상적으로 기동되고 Logger/ThreadLocal 초기화가 수행됨
-- Main 스레드와 NetworkDispatch 스레드가 분리되어 동작함
-- 클라이언트 접속 이벤트가 Dispatcher 스레드에서 처리되며 `ProcessConnect()`까지 정상 수행됨
-- async_logger 환경에서도 스레드 컨텍스트가 구분되어(태그/Thread ID) 동작 흐름을 추적 가능함
+- 패킷 포맷(프레이밍)은 다음과 같이 고정합니다.
+
+  `uint16 size(헤더 포함 전체 길이) + uint16 packetId + payload`
+
+- 네트워크 레이어에서 **패킷 경계가 복원된 상태**로 애플리케이션 레이어에 전달됩니다.
+
+  `OnRecv(BYTE* buffer, int32 numOfBytes)`  ← buffer는 패킷 시작 주소, numOfBytes는 헤더 포함 전체 길이
+
+- 애플리케이션 레이어는:
+  1. 헤더 검증(길이/ID sanity check)
+  2. payload 범위로 `BinaryReader` 생성
+  3. `PacketDispatcher`로 라우팅: `PacketId → Deserialize → Packet Handler`
+
+---
+
+## 클라이언트(Client) 아키텍처
+
+클라이언트는 **네트워크 처리**와 **UI 렌더링**을 분리합니다.
+
+### 1) 스레드 모델
+
+#### A. Dispatch Thread (1개)
+- 단일 `epoll` 인스턴스로 서버 연결 세션을 관리합니다.
+- 네트워크 송수신 및 패킷 디스패치를 수행합니다.
+- 서버와 동일한 프로토콜 프레이밍/직렬화 규격을 사용합니다.
+
+#### B. UI Thread (Main / ImGui)
+- ImGui 렌더링 및 입력 처리를 담당합니다.
+- 네트워크 스레드와 UI 스레드 간의 **커뮤니케이션 구조는 현재 설계/구현 진행 중**입니다.
+  - 연결 완료 이벤트 전달(OnConnected)
+  - 인증 결과 반영(성공/실패, 토큰 저장/로드)
+  - 로그/상태 표시
+  - (향후) 메시지 수신/표시 및 사용자 입력 전송
+
+> 목표는 향후 메시지/이벤트 폭주 상황에서도 안정적으로 동작하는 **스레드 안전 이벤트/커맨드 전달 메커니즘**을 확정하는 것입니다.
+
+---
+
+#### 🔹 현재 구현 완료 체크리스트
+- [ v ]SQLite DB 생성 및 스키마 적용(users/sessions)
+- [ v ]패킷 포맷 고정(길이 + PacketId)
+- [ v ]OnRecv 기반 패킷 파싱/검증
+- [ v ]PacketDispatcher 기반 핸들러 등록/호출 구조
+- [ v ]Auth 패킷(Register/Login/Resume) 정의 및 직렬화
+- [   ]ImGui 클라이언트에서 Dispatch thread + ImGui UI thread 동기화 구조 진행 및 인증 플로우 테스트 UI 구축(연결/로그/토큰 관리)
+
+---
+
+#### 🔹 향후 로드맵(텍스트 기능 확장)
+MVP 인증 이후 단계적으로 다음을 확장할 예정:
+- 채널/룸 Join
+- 채널 정보/멤버 관리
+- 메시지 전송/브로드캐스트
+- 서버에서 채널 단위 fan-out
+- 권한/역할/접근 제어
+- Presence(온라인 상태)
+- 로그/모니터링/메트릭
 
 ---
 
 #### 📝 비고 (운영/확장 포인트)
 
-- 접속/종료 이벤트는 **INFO**로 기록하여 운영 중 생명주기 파악이 가능하도록 설계
-- 비정상 종료(예: unexpected disconnect)는 **WARN/ERROR**로 분리 예정
-- 추후 검증 항목 확장:
-  - 송수신(FlushSend/Recv) 이벤트 흐름 로그 추가
-  - 부하 테스트 시 큐 적체/지연 징후 WARN 기준 정의
-
----
-
-✨ External Libraries (Summary)
-- spdlog
-  : ServerCore 전반의 로깅을 담당하며, 네트워크/세션/스레드 생명주기 로그를 기록한다.
-    async_logger 기반으로 멀티스레드 환경에서도 안정적인 로그 처리를 목표로 설계중
-
-- Dear ImGui
-  : 향후 모니터링 서버에서 실제 서버의 상태(세션 수, 트래픽, 내부 큐 상태 등)를
-    실시간 UI 형태로 시각화하기 위한 디버그/모니터링 UI 용도로 사용 예정이다.
-    (현재 단계에서는 Core 구조 설계 및 연동을 고려한 준비 상태)
-
-- OpenGL / GLFW
-  : 서버 기능 검증을 위한 클라이언트 테스트 및 시각적 확인 용도로 사용할 계획이다.
-    렌더링 및 입력 처리는 테스트 목적에 한정하며,
-    현재는 ServerCore 구현에 집중하고 있어 추후 단계에서 적용 예정이다.
+- Language: C++
+- UI: ImGui
+- DB: SQLite
+- Build: CMake
+- CodeEditor: VSCode
+- OS: Ubuntu (개발/서버 환경)
 
 ---
 
@@ -124,16 +174,9 @@ Windows IOCP 모델과 Linux epoll 모델의 차이를 비교·이해하고,
 sudo apt update
 sudo apt install -y build-essential cmake ninja-build gdb
 
-### Optional: Monitoring Server Dependencies ( Opengl - Imgui )
-### Optional: Game Client Dependencies ( SDL2 : TEMP)
-
-> The following packages are required **only for the monitoring server**
-> that uses ImGui with OpenGL.
-> They are **not required for server and client deployments**.
+### Optional: Client Dependencies ( Opengl - Imgui )
 
 ```bash
-sudo apt install -y libsdl2-dev
-sudo apt install -y libsdl2-image-dev
 
 sudo apt install -y libgl1-mesa-dev
 sudo apt install -y libx11-dev libxrandr-dev libxi-dev libxinerama-dev libxcursor-dev
@@ -142,5 +185,5 @@ cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
 cmake --build build
 
 
-./build/apps/gameserver/gameserver
-./build/apps/gameclient/gameclient
+./build/apps/server/server
+./build/apps/client/client
