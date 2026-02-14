@@ -18,7 +18,7 @@ namespace network
         template<typename PacketType>
         static void Register(Protocol::PacketId id, std::function<void(std::shared_ptr<network::Session>&, const PacketType&)> handleFunc)
         {
-            S_packetIdToPacketHandleFuncMap[id] = [func = std::move(handleFunc)](std::shared_ptr<Session>& session, BinaryReader& br) mutable {
+            S_packetIdToPacketHandleFuncMap[id] = [func = std::move(handleFunc)](std::shared_ptr<Session>& session, engine::BinaryReader& br) mutable {
                 PacketType packet;
                 if (packet.Deserialize(br) == false)
                 {

@@ -16,37 +16,17 @@
 
 #include "AuthDb.h"
 #include "AuthService.h"
+#include "DbWorker.h"
+#include "PacketHandler.h"
 
 int main()
 {
     {
-        AuthDb* authDb = new AuthDb();
-        //  TEMP
-        auto ret = authDb->Initialize("./apps/server/data/auth.db", "./apps/server/db/schema_auth.sql");
-
-        AuthService auth(authDb->GetDBHandle());
-        auth.Initialize();
-
-        AuthFailReason fail;
-        uint64 userid;
-
-        auth.RegisterUser("test", "pw1234", userid, fail);
-
-        LoginResult login;
-        if (auth.Login("test", "pw1234", login, fail) == true) 
-        {
-            uint64 userId2 = 0;
-            if (auth.Resume(login.token, userId2, fail) == true)  
-            {
-                // uid2 == uid 확인
-            }
-        }
-    }
-
-    {
         engine::GlobalContext::GetInstance().Initialize();
-        
         engine::ThreadManager* threadManager = engine::GlobalContext::GetInstance().GetThreadManager();
+        DbWorker* dbWorker = new DbWorker();
+        dbWorker->Initalize("./apps/server/data/auth.db", "./apps/server/db/schema_auth.sql");
+        PacketHandler::RegisterPacketHandleFunc(dbWorker);
 
         //  SessionFactory 
         std::function<std::shared_ptr<network::Session>(void)> sessionFactory = []() {
@@ -79,6 +59,11 @@ int main()
             server->MakeAcceptTask()
         );
 
+        threadManager->Spawn("Db Worker",
+            engine::ThreadRole::Dispatch,
+            dbWorker->MakeDbTask()
+        );
+
         /*
         //  TEMP
         //  game logic thread -> 아직 테스트
@@ -106,10 +91,17 @@ int main()
         if(input == 's' || input == 'S')
         {
             server->Stop();
+            dbWorker->Stop();
             threadManager->StopAllAndJoin();
             sessionRegistry.reset();
 
             engine::GlobalContext::GetInstance().Clear();
+        }
+
+        if(dbWorker)
+        {
+            delete dbWorker;
+            dbWorker = nullptr;
         }
 
         if(server)

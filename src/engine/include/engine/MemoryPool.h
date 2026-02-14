@@ -1,6 +1,9 @@
 #pragma once
 #include <array>
+#include <mutex>
 #include <vector>
+#include <memory>
+
 #include "engine/GlobalContext.h"
 
 namespace engine

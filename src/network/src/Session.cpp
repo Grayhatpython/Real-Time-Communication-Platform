@@ -1,9 +1,10 @@
 #include "network/NetworkPch.h"
 #include "network/Session.h"
-#include "network/PacketHeader.h"
 #include "network/NetworkUtils.h"
 #include "network/SessionRegistry.h"
 #include "network/NetworkDispatcher.h"
+
+#include "network/Protocol.h"
 
 #include "engine/Logger.h"
 #include "engine/MemoryPool.h"
@@ -275,11 +276,11 @@ namespace network
 			const int32 readableSize = dataSize - processLen;
 
 			//	최소한 헤더 크기만큼의 데이터가 없으면 파싱 하지 않음
-			if (readableSize < sizeof(PacketHeader))
+			if (readableSize < sizeof(Protocol::PacketHeader))
 				break;
 
 			//	헤더를 읽어서 전체 패킷 크기 확인
-			engine::BinaryReader br(buffer, sizeof(PacketHeader));
+			engine::BinaryReader br(buffer, sizeof(Protocol::PacketHeader));
 			uint16 packetSize = 0;
 			br.Read<uint16>(packetSize);
 

@@ -1,10 +1,12 @@
 #include "Pch.h"
 #include "PacketHandler.h"
 #include "DbWorker.h"
-
+#include "AuthService.h"
 #include "ClientSession.h"
+
 #include "network/Protocol.h"
 #include "network/PacketDispatcher.h"
+
 
 //  TODO
 void PacketHandler::RegisterPacketHandleFunc(DbWorker* dbWorker)
@@ -38,7 +40,6 @@ void PacketHandler::RegisterPacketHandleFunc(DbWorker* dbWorker)
                 }
 
                 LoginResult loginResult;
-                AuthFailReason authFailReason;
                 bool loginSuccessed = auth.Login(username, password, loginResult, authFailReason);
 
                 if(loginSuccessed == false)
@@ -64,7 +65,7 @@ void PacketHandler::RegisterPacketHandleFunc(DbWorker* dbWorker)
         });
  }
 
-void PacketHandler::RegisterCS2RegisterHandleFunc(DbWorker* dbWorker)
+void PacketHandler::RegisterCS2LoginHandleFunc(DbWorker* dbWorker)
 {
     network::PacketDispatcher::Register<Protocol::C2S_Login>(Protocol::PacketId::C2S_Login,
         [dbWorker](std::shared_ptr<network::Session>& session, const Protocol::C2S_Login& loginPacket)
