@@ -15,8 +15,8 @@ enum class AuthFailReason : uint16
 struct LoginResult
 {
     uint64 userId = 0;
-    std::string token;   // base64url
     int64 expiresAt = 0; // unix sec
+    std::string token;   // base64url
 };
 
 class SqliteDb;

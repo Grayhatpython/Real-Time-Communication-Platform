@@ -17,7 +17,7 @@ void ClientSession::OnDisconnected()
 
 void ClientSession::OnRecv(BYTE* buffer, int32 numOfBytes) 
 {
-    auto clientSession = std::static_pointer_cast<ClientSession>(shared_from_this());
+    auto session = shared_from_this();
 
     engine::BinaryReader br(buffer,numOfBytes);
 
@@ -27,7 +27,7 @@ void ClientSession::OnRecv(BYTE* buffer, int32 numOfBytes)
     br.Read(size);
     br.Read(id);
 
-    network::PacketDispatcher::Dispatch(clientSession, id, br);
+    network::PacketDispatcher::Dispatch(session, id, br);
 }
 
 void ClientSession::OnSend() 

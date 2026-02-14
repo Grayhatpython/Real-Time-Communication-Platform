@@ -11,6 +11,13 @@ public:
     virtual void OnRecv(BYTE* buffer, int32 numOfBytes) override;
     virtual void OnSend() override;
     
-private:
+public:
+    void    SetUserId(uint64 userId) { _userId = userId; }
+    uint64  GetUserId() const { return _userId; }
 
+    bool    IsAuthed() const { return _userId != 0; }
+
+
+private:
+    uint64  _userId = 0;
 };
