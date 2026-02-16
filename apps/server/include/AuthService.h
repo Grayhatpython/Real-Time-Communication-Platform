@@ -1,23 +1,6 @@
 #pragma once    
 
 #include "engine/CommonType.h"
-enum class AuthFailReason : uint16
-{
-    None = 0,
-    UserNotFound,
-    FailedHashPassword,
-    WrongPassword,
-    TokenInvalid,
-    TokenExpired,
-    DbError,
-};
-
-struct LoginResult
-{
-    uint64 userId = 0;
-    int64 expiresAt = 0; // unix sec
-    std::string token;   // base64url
-};
 
 class SqliteDb;
 class AuthService

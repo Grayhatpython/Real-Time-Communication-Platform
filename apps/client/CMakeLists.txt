@@ -45,6 +45,8 @@ target_link_libraries(${APP_NAME} PRIVATE
     ${OPENGL_LIBRARIES}     # CMake의 find_package(OpenGL) 명령으로 찾아진 OpenGL 관련 라이브러리들
 )
 
+target_link_libraries(${APP_NAME} PRIVATE nlohmann_json::nlohmann_json)
+
 # 타겟에 인클루드 디렉토리 추가
 target_include_directories(${APP_NAME} PRIVATE
     ${IMGUI_DIR}                                # ImGui 라이브러리의 헤더 파일 경로

@@ -4,9 +4,7 @@
 #include <functional>
 #include <unordered_map>
 
-#include "network/Protocol.h"
-
-#include "engine/BinaryReader.h"
+#include "Protocol.h"
 
 namespace network
 {

@@ -1,5 +1,5 @@
-#include "network/NetworkPch.h"
-#include "network/PacketDispatcher.h"
+#include "Pch.h"
+#include "PacketDispatcher.h"
 
 namespace network
 {

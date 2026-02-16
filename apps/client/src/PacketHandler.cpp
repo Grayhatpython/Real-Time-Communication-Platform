@@ -2,8 +2,8 @@
 #include "PacketHandler.h"
 #include "ServerSession.h"
 
-#include "network/Protocol.h"
-#include "network/PacketDispatcher.h"
+#include "Protocol.h"
+#include "PacketDispatcher.h"
 
 void PacketHandler::RegisterPacketHandleFunc()
 {
@@ -19,6 +19,25 @@ void PacketHandler::RegisterS2CAuthOkHandleFunc()
             auto serverSession = std::static_pointer_cast<ServerSession>(session);
 
             serverSession->SetAuthed(authOkPacket.userId, authOkPacket.token);
+
+            if(authOkPacket.type == AuthOKType::Register)
+            {
+
+            }
+            else if(authOkPacket.type == AuthOKType::Login)
+            {
+
+            }
+            else  if(authOkPacket.type ==  AuthOKType::Resume)
+            {
+
+            }
+            else
+            {
+                //  TEMP
+            }
+            
+            EN_LOG_DEBUG("S2C_AuthOk");
         });
 }
 

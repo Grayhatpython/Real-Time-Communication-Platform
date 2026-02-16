@@ -1,24 +1,41 @@
 #pragma once
 
-#include "engine/CommonType.h"
 #include "engine/BinaryReader.h"
 #include "engine/BinaryWriter.h"
 #include "engine/Logger.h"
 
 #include "network/Session.h"
+#include "network/PacketHeader.h"
 #include "network/SendBufferPool.h"
+
+enum class AuthOKType : uint16
+{
+    None = 0,
+    Register,
+    Login,
+    Resume,
+};
+
+enum class AuthFailReason : uint16
+{
+    None = 0,
+    UserNotFound,
+    FailedHashPassword,
+    WrongPassword,
+    TokenInvalid,
+    TokenExpired,
+    DbError,
+};
+
+struct LoginResult
+{
+    uint64 userId = 0;
+    int64 expiresAt = 0; // unix sec
+    std::string token;   // base64url
+};
 
 namespace Protocol
 {
-        //  TEMP
-    #pragma pack(push, 1)
-    struct PacketHeader
-    {
-        uint16 size;
-        uint16 id;
-    };
-    #pragma pack(pop)
-
     enum class PacketId : uint16
     {
         // Auth
@@ -31,7 +48,7 @@ namespace Protocol
 
     };
 
-    struct C2S_Register : public PacketHeader
+    struct C2S_Register : public network::PacketHeader
     {
         bool Serialize(engine::BinaryWriter& bw) const
         {
@@ -66,7 +83,7 @@ namespace Protocol
         std::string password;
     };
 
-    struct C2S_Login : public PacketHeader
+    struct C2S_Login : public network::PacketHeader
     {
         bool Serialize(engine::BinaryWriter& bw) const
         {
@@ -101,7 +118,7 @@ namespace Protocol
         std::string password;
     };
 
-    struct C2S_Resume
+    struct C2S_Resume : public network::PacketHeader
     {
         bool Serialize(engine::BinaryWriter& bw) const
         {
@@ -126,19 +143,17 @@ namespace Protocol
         std::string token;
     };
 
-    struct S2C_AuthOk
+    struct S2C_AuthOk : public network::PacketHeader
     {
-        size_t GetSerializedSize() const
-        {
-            return sizeof(uint64) + sizeof(int64) + (2 + token.size());
-        }
-
         bool Serialize(engine::BinaryWriter& bw) const
         {
-            if(bw.Write<uint64>(userId) == false || bw.Write<int64>(expiresAt) == false)
+            if(bw.Write<uint64>(userId) == false || bw.Write<int64>(expiresAt) == false) 
                 return false;
             
-            return bw.Write(token);
+            if(bw.Write(token) == false || bw.Write(type) == false)
+                return false;
+
+            return true;
         }
 
         bool Deserialize(engine::BinaryReader& br)
@@ -146,7 +161,10 @@ namespace Protocol
             if(br.Read(userId) == false || br.Read(expiresAt) == false)
                 return false;
 
-            return br.Read(token);
+            if(br.Read(token) == false || br.Read(type) == false)
+                return false;
+
+            return true;
         }
 
         uint32 Size() const 
@@ -157,6 +175,7 @@ namespace Protocol
             totalSize += sizeof(expiresAt); 
             totalSize += sizeof(uint32);     // token 길이를 저장할 공간
             totalSize += static_cast<uint32>(token.size());
+            totalSize += sizeof(AuthOKType);
             
             return totalSize;
         }
@@ -164,13 +183,14 @@ namespace Protocol
         uint64      userId = 0;
         int64       expiresAt = 0;
         std::string token; // Login/Register 시 발급
+        AuthOKType  type;
     };
 
-    struct S2C_AuthFail
+    struct S2C_AuthFail : public network::PacketHeader
     {
         bool Serialize(engine::BinaryWriter& bw) const
         {
-            return bw.Write<uint16>(reason);
+            return bw.Write(reason);
         }
 
         bool Deserialize(engine::BinaryReader& br)
@@ -180,23 +200,23 @@ namespace Protocol
 
         uint32 Size() const 
         {
-            return sizeof(uint16);
+            return sizeof(AuthFailReason);
         }
 
-        uint16 reason = 0; // AuthFailReason 값을 uint16
+        AuthFailReason reason = AuthFailReason::None;
     };
 
     template<typename Packet>
     inline void SendPacket(std::shared_ptr<network::Session> session, PacketId packetId, const Packet& packet)
     {
-        const uint32 totalSize = sizeof(PacketHeader) + packet.Size();
+        const uint32 totalSize = sizeof(network::PacketHeader) + packet.Size();
 
         auto sendContext = std::make_shared<network::SendContext>();
         auto segment = network::SendBufferArena::Allocate(totalSize);
 
         engine::BinaryWriter bw(segment->ptr, totalSize);
 
-        if(bw.Write<uint16>(totalSize) || bw.Write(packetId) == false)
+        if(bw.Write<uint16>(totalSize) == false || bw.Write(packetId) == false)
         {
             EN_LOG_DEBUG("PacketId[{}] PacketHeader Serialize Failed", static_cast<uint16>(packetId));
             return;

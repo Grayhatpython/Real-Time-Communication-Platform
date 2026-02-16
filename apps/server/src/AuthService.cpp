@@ -2,6 +2,7 @@
 #include "AuthService.h"
 #include "SqliteDb.h"
 #include "SQLiteStmt.h"
+#include "Protocol.h"
 
 #include <chrono>
 #include <sqlite3.h>

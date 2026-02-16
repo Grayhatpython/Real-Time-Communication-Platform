@@ -1,13 +1,18 @@
 #include "Pch.h"
 #include "ServerSession.h"
-
-#include "engine/BinaryReader.h"
-#include "network/Protocol.h"
-#include "network/PacketDispatcher.h"
+#include "PacketDispatcher.h"
 
 void ServerSession::OnConnected()
 {
+    auto session = shared_from_this();
 
+    {
+        //  register Test
+        Protocol::C2S_Register registerPacket;
+        registerPacket.username = "cisco";
+        registerPacket.password = "cisco123";
+        Protocol::SendPacket(session, Protocol::PacketId::C2S_Register, registerPacket);
+    }
 }
 
 void ServerSession::OnDisconnected()

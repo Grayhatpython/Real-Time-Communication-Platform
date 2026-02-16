@@ -30,6 +30,14 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)    # GLFW 예제 코드 빌드 
 set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)           # GLFW 설치 규칙 비활성화 (프로젝트 내에서만 사용)
 # --- 외부 라이브러리(GLFW) 가져오기 설정  ---
 
+# nlohmann/json
+include(FetchContent)
+
+FetchContent_Declare(nlohmann_json
+  GIT_REPOSITORY https://github.com/nlohmann/json.git
+  GIT_TAG v3.11.3 
+)
+FetchContent_MakeAvailable(nlohmann_json)
 
 # 시스템에 설치된 OpenGL 라이브러리를 찾습니다.
 # REQUIRED 키워드는 OpenGL 라이브러리를 찾지 못하면 빌드 오류를 발생

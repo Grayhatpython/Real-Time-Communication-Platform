@@ -3,10 +3,8 @@
 #include "DbWorker.h"
 #include "AuthService.h"
 #include "ClientSession.h"
-
-#include "network/Protocol.h"
-#include "network/PacketDispatcher.h"
-
+#include "Protocol.h"
+#include "PacketDispatcher.h"
 
 //  TODO
 void PacketHandler::RegisterPacketHandleFunc(DbWorker* dbWorker)
@@ -34,33 +32,19 @@ void PacketHandler::RegisterPacketHandleFunc(DbWorker* dbWorker)
                 if(registerSuccessed == false)
                 {
                     Protocol::S2C_AuthFail authfailPacket;
-                    authfailPacket.reason = static_cast<uint16>(authFailReason);
+                    authfailPacket.reason = authFailReason;
                     Protocol::SendPacket(session, Protocol::PacketId::S2C_AuthFail, authfailPacket);
                     return;
                 }
-
-                LoginResult loginResult;
-                bool loginSuccessed = auth.Login(username, password, loginResult, authFailReason);
-
-                if(loginSuccessed == false)
-                {
-                    Protocol::S2C_AuthFail authfailPacket;
-                    authfailPacket.reason = static_cast<uint16>(authFailReason);
-                    Protocol::SendPacket(session, Protocol::PacketId::S2C_AuthFail, authfailPacket);
-                    return;
-                }
-
-                {
-                    auto clientSession = std::static_pointer_cast<ClientSession>(session);
-                    clientSession->SetUserId(loginResult.userId);
-                }
+                    
+                EN_LOG_DEBUG("[{}] User registered", username);
 
                 Protocol::S2C_AuthOk autoOkPacket;
-                autoOkPacket.userId = loginResult.userId;
-                autoOkPacket.expiresAt = loginResult.expiresAt;
-                autoOkPacket.token = loginResult.token;
+                autoOkPacket.userId = newUserId;
+                autoOkPacket.expiresAt = 0;
+                autoOkPacket.token = "";
+                autoOkPacket.type = AuthOKType::Register;
                 Protocol::SendPacket(session, Protocol::PacketId::S2C_AuthOk, autoOkPacket);
-
             });
         });
  }
@@ -82,7 +66,7 @@ void PacketHandler::RegisterCS2LoginHandleFunc(DbWorker* dbWorker)
                 if(loginSuccessed == false)
                 {
                     Protocol::S2C_AuthFail authfailPacket;
-                    authfailPacket.reason = static_cast<uint16>(authFailReason);
+                    authfailPacket.reason = authFailReason;
                     Protocol::SendPacket(session, Protocol::PacketId::S2C_AuthFail, authfailPacket);
                     return;
                 }
@@ -96,6 +80,7 @@ void PacketHandler::RegisterCS2LoginHandleFunc(DbWorker* dbWorker)
                 autoOkPacket.userId = loginResult.userId;
                 autoOkPacket.expiresAt = loginResult.expiresAt;
                 autoOkPacket.token = loginResult.token;
+                autoOkPacket.type = AuthOKType::Login;
                 Protocol::SendPacket(session, Protocol::PacketId::S2C_AuthOk, autoOkPacket);
             });
         });
@@ -119,7 +104,7 @@ void PacketHandler::RegisterCS2ResumeHandleFunc(DbWorker* dbWorker)
                 if(resumeSuccessed == false)
                 {
                     Protocol::S2C_AuthFail authfailPacket;
-                    authfailPacket.reason = static_cast<uint16>(authFailReason);
+                    authfailPacket.reason = authFailReason;
                     Protocol::SendPacket(session, Protocol::PacketId::S2C_AuthFail, authfailPacket);
                     return;
                 }
@@ -134,6 +119,7 @@ void PacketHandler::RegisterCS2ResumeHandleFunc(DbWorker* dbWorker)
                 autoOkPacket.userId = userId;
                 autoOkPacket.token = "";
                 autoOkPacket.expiresAt = 0;
+                autoOkPacket.type = AuthOKType::Resume;
                 Protocol::SendPacket(session, Protocol::PacketId::S2C_AuthOk, autoOkPacket);
             });
         });

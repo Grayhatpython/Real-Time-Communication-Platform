@@ -27,6 +27,7 @@ find_package(SQLite3 REQUIRED)
 
 target_link_libraries(${APP_NAME} PRIVATE SQLite::SQLite3)
 target_link_libraries(${APP_NAME} PRIVATE sodium)
+target_link_libraries(${APP_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
 # 생성된 실행 파일(`APP_NAME` = server)에 필요한 라이브러리들을 링크(연결)
 # PRIVATE 키워드는 이 라이브러리들이 `APP_NAME`이라는 타겟 자체에만 필요하고,

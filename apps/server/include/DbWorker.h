@@ -27,7 +27,7 @@ private:
     std::string _dbPath;
     std::string _schemaPath;
 
-    std::atomic<bool>           _running{false};
+    std::atomic<bool>           _running{true};
     
     std::mutex                  _lock;
     std::condition_variable     _cv;
